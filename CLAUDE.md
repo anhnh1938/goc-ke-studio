@@ -81,6 +81,19 @@ quan sát cả hai sẽ dao động vô hạn. Xem comment trong `PreviewStage.j
 **Tô màu vùng padding** dùng thủ thuật 2 lớp gradient (`.a4-text.show-padding`): lớp trắng
 phủ content-box, lớp xanh phủ padding-box, phần chênh lệch chính là vùng padding.
 
+## Mẫu có sẵn
+
+`src/data/presets.json` là dữ liệu người dùng tự sửa, **không phải file sinh ra bởi code**.
+Nguyên tắc: JSON viết bằng đúng từ vựng của app — `elements[]` trong đó chính là thành
+phần con, tên trường y hệt lúc chạy. `presets.js` chỉ điền nốt trường bị bỏ trống, tuyệt
+đối không dịch từ một cú pháp rút gọn nào sang. Từng có phiên bản dùng `hearts: [{x,y,size}]`
+rồi `icons: [{icon,x,y,size}]` — cả hai đều bị bỏ vì bắt người dùng học từ vựng riêng và
+khoá cứng vào emoji trái tim.
+
+Cỡ chữ trong mẫu là số đã đo, không phải ước lượng: khung 3 × 4 cm có lòng trong 36 × 26 mm,
+mỗi mẫu chỉnh sao cho dòng dài nhất lấp ~90% bề ngang. Đổi nội dung mẫu thì phải đo lại,
+xem mục kiểm thử bên dưới.
+
 ## Quy ước UI (antd)
 
 **Không dùng `Space.Compact` cho hàng nút.** Nút chỉ có icon + `block` trong `Space.Compact`
@@ -128,6 +141,12 @@ thường chỉ lộ ra ở một trong hai.
 Với logic store/DOM, có thể mount app trong jsdom rồi bắn action qua
 `useEditorStore.getState()` và kiểm tra DOM. Lưu ý: `renderToString` **không** phản ánh
 thay đổi của zustand (giới hạn của server snapshot), phải dùng `react-dom/client` + `act`.
+
+**Đo chữ có tràn khung không:** đừng dùng div probe ẩn để đo — webfont chỉ được tải khi
+có phần tử thật dùng đến nó, nên probe sẽ đo bằng font fallback và cho số sai lệch tới 25%.
+Phải thêm item thật lên trang, `await document.fonts.ready`, rồi so bề rộng dòng dài nhất
+với lòng khung. Cũng đừng đếm dòng bằng `Range.getClientRects().length` — nó trả thêm rect
+cho ký tự xuống dòng, mọi mẫu đều bị báo nhầm là wrap.
 
 Cần click thật (mở modal, kéo thả) thì `npm i --no-save puppeteer-core` rồi
 `puppeteer.launch({ executablePath: <đường dẫn msedge.exe>, headless: 'new' })`. Script

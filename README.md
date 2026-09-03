@@ -54,8 +54,12 @@ src/
     TextTab.jsx             # tab Văn bản (sửa item + text chính)
     PreviewTab.jsx          # tab Preview
     ElementModal.jsx        # modal tùy chỉnh một thành phần con
+    PresetModal.jsx         # gallery chọn mẫu có sẵn
     TypographyFields.jsx    # nhóm control chữ dùng chung cho panel và modal
     Swatches.jsx            # ColorPicker + dãy màu mẫu
+  data/
+    presets.json            # 36 mẫu có sẵn - sửa file này là xong, không cần đụng code
+    presets.js              # bung presets.json ra dạng item mà store dùng được
 public/
   fonts/NotoColorEmoji.ttf  # font emoji màu, khai báo @font-face là "iOSEmojiCustom"
 legacy/
@@ -87,6 +91,9 @@ cỡ chữ tính bằng **px** — đúng như bản gốc.
 
 ## Tính năng
 
+- **Mẫu có sẵn**: 36 mẫu khung 3 × 4 cm, chọn từ gallery xem trước đúng tỉ lệ thật.
+  Danh sách nằm ở [src/data/presets.json](src/data/presets.json) — sửa file đó là xong,
+  không cần đụng vào code
 - Thêm / nhân bản / xóa item; đổi thứ tự bằng kéo thả trực tiếp trên trang A4
 - Font, cỡ chữ, đậm / nghiêng / gạch chân, màu, độ giãn dòng
 - Khung kích thước thật: 3×4, 3×5, 2×6 cm hoặc không khung

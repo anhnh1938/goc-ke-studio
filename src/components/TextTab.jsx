@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button, Checkbox, InputNumber, Upload } from 'antd'
 import {
+  AppstoreOutlined,
   CloseOutlined,
   CopyOutlined,
   FileImageOutlined,
@@ -13,6 +14,7 @@ import {
   useEditorStore,
 } from '../store/useEditorStore'
 import ElementModal from './ElementModal'
+import PresetModal from './PresetModal'
 import TypographyFields from './TypographyFields'
 
 const PAD_FIELDS = [
@@ -41,6 +43,7 @@ export default function TextTab() {
   const deleteElement = useEditorStore((s) => s.deleteElement)
 
   const [padLock, setPadLock] = useState(false)
+  const [presetOpen, setPresetOpen] = useState(false)
 
   const index = items.findIndex((it) => it.id === selectedId)
 
@@ -72,6 +75,15 @@ export default function TextTab() {
       {/* 0. Quản lý item */}
       <div className="form-group full always-on">
         <span className="form-label">Item trên trang:</span>
+        <div className="btn-row" style={{ marginBottom: 8 }}>
+          <Button
+            block
+            icon={<AppstoreOutlined />}
+            onClick={() => setPresetOpen(true)}
+          >
+            Chọn mẫu có sẵn
+          </Button>
+        </div>
         <div className="btn-row">
           <Button type="primary" icon={<PlusOutlined />} onClick={addItem} block>
             Thêm mới
@@ -283,6 +295,7 @@ export default function TextTab() {
       </div>
 
       <ElementModal />
+      <PresetModal open={presetOpen} onClose={() => setPresetOpen(false)} />
     </div>
   )
 }

@@ -51,6 +51,18 @@ export const useEditorStore = create((set, get) => ({
       return { items: [...s.items, item], selectedId: item.id, selectedElId: null }
     }),
 
+  // Thêm một item dựng sẵn từ mẫu (src/data/presets.json)
+  addItemFromPreset: (preset) =>
+    set((s) => {
+      const item = createItem(preset)
+      return {
+        items: [...s.items, item],
+        selectedId: item.id,
+        selectedElId: null,
+        elModalOpen: false,
+      }
+    }),
+
   copyItem: (id) =>
     set((s) => {
       const index = s.items.findIndex((it) => it.id === id)

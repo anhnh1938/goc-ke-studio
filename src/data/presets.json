@@ -1,0 +1,242 @@
+{
+  "_readme": [
+    "Mẫu có sẵn. Sửa file này là danh sách mẫu trong app đổi theo, không cần sửa code.",
+    "Mỗi mẫu:",
+    "  id        số thứ tự, phải là duy nhất",
+    "  text      nội dung; xuống dòng bằng \\n",
+    "  fontSize  cỡ chữ (px). Khung 3x4 vừa được khoảng 38 ký tự/dòng ở cỡ 7",
+    "  lineHeight  (tùy chọn, mặc định 1.6)",
+    "  w, h      (tùy chọn) rộng x cao của khung tính bằng cm, mặc định 4 x 3",
+    "  fontFamily  (tùy chọn) mặc định Be Vietnam Pro",
+    "  elements  (tùy chọn) chữ / emoji đặt tự do trong khung, ví dụ trái tim",
+    "            trang trí. Đây đúng là cấu trúc thành phần con của app, viết sao",
+    "            chạy vậy. Bỏ trống trường nào thì lấy mặc định trong ngoặc:",
+    "              type       'text' hoặc 'image'  (mặc định text)",
+    "              text       ký tự muốn hiện, gõ thẳng: ❤️ 🌸 ⭐ ☕ hay chữ thường",
+    "              src        chỉ dùng khi type là image, là data URL của ảnh",
+    "              x, y       vị trí, mm, tính từ góc trên-trái của lòng khung  (0)",
+    "              w, h       kích thước, mm; để 0 là tự động                   (0)",
+    "              rotate     xoay, độ                                          (0)",
+    "              z          lớp; text chính của item ở lớp 1                  (2)",
+    "              fontSize   cỡ chữ, px                                        (10)",
+    "              lineHeight giãn dòng                                         (1)",
+    "              color      màu; emoji màu bỏ qua trường này            (#111111)",
+    "              bold, italic, underline                                  (false)",
+    "              fontFamily                        (lấy theo fontFamily của mẫu)",
+    "            Khung 4 x 3 cm có lòng trong 36 x 26 mm."
+  ],
+  "defaults": {
+    "w": 4,
+    "h": 3,
+    "lineHeight": 1.6,
+    "fontFamily": "'Be Vietnam Pro', 'iOSEmojiCustom', sans-serif"
+  },
+  "presets": [
+    {
+      "id": 1,
+      "text": "“Em mặc chiếc áo này,\nlà đang khoác lên mình\ncả một vòng tay yêu thương.”",
+      "fontSize": 8.5
+    },
+    {
+      "id": 2,
+      "text": "“Anh mặc chiếc áo này,\nlà đang khoác lên mình\ncả một vòng tay yêu thương.”",
+      "fontSize": 8.5
+    },
+    {
+      "id": 3,
+      "text": "“Áo này thay em ôm anh,\ndịu dàng như lúc anh ôm em.”",
+      "fontSize": 8.5
+    },
+    {
+      "id": 4,
+      "text": "“Áo này thay anh ôm em,\ndịu dàng như lúc em ôm anh.”",
+      "fontSize": 8.5
+    },
+    {
+      "id": 5,
+      "text": "“Em có thể không gặp anh mỗi ngày,\nnhưng em yêu anh mỗi ngày.”",
+      "fontSize": 7
+    },
+    {
+      "id": 6,
+      "text": "“Anh có thể không gặp em mỗi ngày,\nnhưng anh yêu em mỗi ngày.”",
+      "fontSize": 7
+    },
+    {
+      "id": 7,
+      "text": "“Xuân, Hạ, Thu, Đông,\nmong anh luôn vui và hạnh phúc.”\n\n❤️  ❤️  ❤️",
+      "fontSize": 7.5
+    },
+    {
+      "id": 8,
+      "text": "“Xuân, Hạ, Thu, Đông,\nmong em luôn vui và hạnh phúc.”\n\n❤️  ❤️  ❤️",
+      "fontSize": 7.5
+    },
+    {
+      "id": 9,
+      "text": "Gửi em một cái ôm,\ndưới hình hài chiếc áo.\n“Yêu em”",
+      "fontSize": 10
+    },
+    {
+      "id": 10,
+      "text": "Gửi anh một cái ôm,\ndưới hình hài chiếc áo.\n“Yêu anh”",
+      "fontSize": 10
+    },
+    {
+      "id": 11,
+      "text": "“Mong người đặc biệt của anh\nluôn bình an và hạnh phúc.”",
+      "fontSize": 8.5
+    },
+    {
+      "id": 12,
+      "text": "“Mong người đặc biệt của em\nluôn bình an và hạnh phúc.”",
+      "fontSize": 8.5
+    },
+    {
+      "id": 13,
+      "text": "“Chúc em mọi sự đong đầy,\nbao nhiêu hạnh phúc đều là của em.”",
+      "fontSize": 7
+    },
+    {
+      "id": 14,
+      "text": "“Chúc anh mọi sự đong đầy,\nbao nhiêu hạnh phúc đều là của anh.”",
+      "fontSize": 7
+    },
+    {
+      "id": 15,
+      "text": "Gửi em một cái ôm, kèm theo lời nhắn.\n“Thương em nhiều”",
+      "fontSize": 7
+    },
+    {
+      "id": 16,
+      "text": "Gửi anh một cái ôm, kèm theo lời nhắn.\n“Thương anh nhiều”",
+      "fontSize": 7
+    },
+    {
+      "id": 17,
+      "text": "Gặp được em là\nđiều dịu dàng nhất của anh.\n“Yêu em”",
+      "fontSize": 9
+    },
+    {
+      "id": 18,
+      "text": "Gặp được anh là\nđiều dịu dàng nhất của em.\n“Yêu anh”",
+      "fontSize": 9.5
+    },
+    {
+      "id": 19,
+      "text": "“Chiếc áo này là một cái ôm dịu dàng,\ngửi đến người em thương.”\n\n❤️  ❤️  ❤️",
+      "fontSize": 7
+    },
+    {
+      "id": 20,
+      "text": "“Chiếc áo này là một cái ôm dịu dàng,\ngửi đến người anh thương.”\n\n❤️  ❤️  ❤️",
+      "fontSize": 7
+    },
+    {
+      "id": 21,
+      "text": "“Anh không thể ở cạnh mỗi ngày,\nnhưng chiếc áo này\ncó thể thay anh ôm em mỗi tối.”",
+      "fontSize": 7.5
+    },
+    {
+      "id": 22,
+      "text": "“Em không thể ở cạnh mỗi ngày,\nnhưng chiếc áo này\ncó thể thay em ôm anh mỗi tối.”",
+      "fontSize": 8
+    },
+    {
+      "id": 23,
+      "text": "“Em gửi anh chiếc áo này,\nthay cho những cái ôm mỗi ngày.”",
+      "fontSize": 7.5,
+      "elements": [
+        { "type": "text", "text": "❤️", "x": 2, "y": 0.5, "fontSize": 13, "rotate": 0, "z": 2 },
+        { "type": "text", "text": "❤️", "x": 28, "y": 1, "fontSize": 9, "rotate": 0, "z": 3 },
+        { "type": "text", "text": "❤️", "x": 32.5, "y": 5, "fontSize": 7, "rotate": 0, "z": 4 },
+        { "type": "text", "text": "❤️", "x": 2.5, "y": 18.5, "fontSize": 12, "rotate": 0, "z": 5 },
+        { "type": "text", "text": "❤️", "x": 16, "y": 20, "fontSize": 8, "rotate": 0, "z": 6 },
+        { "type": "text", "text": "❤️", "x": 27, "y": 18, "fontSize": 11, "rotate": 0, "z": 7 }
+      ]
+    },
+    {
+      "id": 24,
+      "text": "“Anh gửi em chiếc áo này,\nthay cho những cái ôm mỗi ngày.”",
+      "fontSize": 7.5,
+      "elements": [
+        { "type": "text", "text": "❤️", "x": 2, "y": 0.5, "fontSize": 13, "rotate": 0, "z": 2 },
+        { "type": "text", "text": "❤️", "x": 28, "y": 1, "fontSize": 9, "rotate": 0, "z": 3 },
+        { "type": "text", "text": "❤️", "x": 32.5, "y": 5, "fontSize": 7, "rotate": 0, "z": 4 },
+        { "type": "text", "text": "❤️", "x": 2.5, "y": 18.5, "fontSize": 12, "rotate": 0, "z": 5 },
+        { "type": "text", "text": "❤️", "x": 16, "y": 20, "fontSize": 8, "rotate": 0, "z": 6 },
+        { "type": "text", "text": "❤️", "x": 27, "y": 18, "fontSize": 11, "rotate": 0, "z": 7 }
+      ]
+    },
+    {
+      "id": 25,
+      "text": "“Mỗi khi mặc áo này,\ncoi như em đang kề bên anh.”",
+      "fontSize": 8.5
+    },
+    {
+      "id": 26,
+      "text": "“Mỗi khi mặc áo này,\ncoi như anh đang kề bên em.”",
+      "fontSize": 8.5
+    },
+    {
+      "id": 27,
+      "text": "“Gửi anh một cái ôm,\ncho những ngày\nem không thể bên anh.”",
+      "fontSize": 10,
+      "elements": [
+        { "type": "text", "text": "❤️", "x": 28.5, "y": 0.5, "fontSize": 11, "rotate": 0, "z": 2 },
+        { "type": "text", "text": "❤️", "x": 32, "y": 2, "fontSize": 8, "rotate": 0, "z": 3 },
+        { "type": "text", "text": "❤️", "x": 29.5, "y": 3.5, "fontSize": 7, "rotate": 0, "z": 4 }
+      ]
+    },
+    {
+      "id": 28,
+      "text": "“Gửi em một cái ôm,\ncho những ngày\nanh không thể bên em.”",
+      "fontSize": 10,
+      "elements": [
+        { "type": "text", "text": "❤️", "x": 28.5, "y": 0.5, "fontSize": 11, "rotate": 0, "z": 2 },
+        { "type": "text", "text": "❤️", "x": 32, "y": 2, "fontSize": 8, "rotate": 0, "z": 3 },
+        { "type": "text", "text": "❤️", "x": 29.5, "y": 3.5, "fontSize": 7, "rotate": 0, "z": 4 }
+      ]
+    },
+    {
+      "id": 29,
+      "text": "“Có anh rồi,\nnắng mưa em cũng thấy bình yên.”",
+      "fontSize": 7.5
+    },
+    {
+      "id": 30,
+      "text": "“Mình xứng đáng được yêu thương\ntheo cách dịu dàng nhất.”",
+      "fontSize": 7.5
+    },
+    {
+      "id": 31,
+      "text": "“Dù anh ở đâu, làm gì, tình yêu bé xíu\ncủa em vẫn lẽo đẽo theo sau.”",
+      "fontSize": 7
+    },
+    {
+      "id": 32,
+      "text": "“Cùng em đi qua những ngày nhỏ xíu,\nđến cả đời dài anh nhé.”",
+      "fontSize": 7
+    },
+    {
+      "id": 33,
+      "text": "“Có thể mình không gặp nhau nhiều,\nnhưng áo này là lời nhớ.”",
+      "fontSize": 7
+    },
+    {
+      "id": 34,
+      "text": "“Mỗi khi anh mặc áo này,\nhãy nhớ luôn có một người\nchờ anh bình an trở về.”",
+      "fontSize": 9.5
+    },
+    {
+      "id": 35,
+      "text": "“Chỉ mong anh có thật nhiều\nsức khỏe và niềm vui,\nđể mỗi ngày trôi qua đều nhẹ nhàng.”",
+      "fontSize": 7
+    },
+    {
+      "id": 36,
+      "text": "“Sẽ có người vừa đủ, để ta muốn\nbắt đầu sẽ có áo vừa mặc,\nđể thấy trọn vẹn yêu thương.”",
+      "fontSize": 8
+    }
+  ]
+}
