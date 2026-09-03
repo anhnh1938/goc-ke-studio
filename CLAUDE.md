@@ -61,6 +61,11 @@ nếu không modal sẽ trỏ vào một thành phần không còn tồn tại.
 
 `PX_PER_MM = 96 / 25.4` trong `src/constants.js`.
 
+**`FRAME_SIZES` mang cả padding.** Mỗi cỡ khung khai báo `w, h, padTop, padRight,
+padBottom, padLeft` — cùng tên trường với `DEFAULT_ITEM` nên spread thẳng vào item được
+(`frameFields()`). Chọn cỡ khung là đặt lại cả padding: khung 1.5 cm cao mà vẫn chừa 2 mm
+trên/dưới thì mất 27% chiều cao, nên cỡ đó chỉ chừa 1 mm.
+
 **`w`/`h` = 0 nghĩa là "auto", không phải 0.** Item: `w`/`h` = 0 → không có khung. Thành
 phần con: `w` = 0 → chữ co theo nội dung; `h` = 0 → ảnh giữ tỉ lệ gốc.
 

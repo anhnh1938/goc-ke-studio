@@ -7,7 +7,7 @@ import {
   FileImageOutlined,
   PlusOutlined,
 } from '@ant-design/icons'
-import { FRAME_SIZES } from '../constants'
+import { FRAME_SIZES, frameFields } from '../constants'
 import {
   selectSelectedEl,
   selectSelectedItem,
@@ -53,6 +53,15 @@ export default function TextTab() {
         (subEl ? ` → ${subEl.type === 'image' ? 'ảnh' : 'chữ'} con` : ' → text chính')
       : `Chưa chọn item nào (${items.length} item trên trang)`
     : 'Trang đang trống'
+
+  // Chọn cỡ khung: đặt luôn padding đi kèm cỡ đó
+  const setFrameSize = (size) => {
+    const fields = frameFields(size)
+    if (!padLock) return updateSelected(fields)
+    // Đang khoá "đều 4 góc" thì lấy giá trị trên áp cho cả 4, khỏi phá vỡ khoá
+    const v = fields.padTop
+    updateSelected({ ...fields, padTop: v, padRight: v, padBottom: v, padLeft: v })
+  }
 
   const setPad = (key, value) => {
     const v = Number(value) || 0
@@ -140,14 +149,15 @@ export default function TextTab() {
             <Button
               key={size.label}
               type={item && item.w === size.w && item.h === size.h ? 'primary' : 'default'}
-              onClick={() => updateSelected({ w: size.w, h: size.h })}
+              onClick={() => setFrameSize(size)}
             >
               {size.label}
             </Button>
           ))}
         </div>
         <p className="hint">
-          Text sẽ nằm gọn trong khung, khung đúng kích thước thật trên khổ A4.
+          Text sẽ nằm gọn trong khung, khung đúng kích thước thật trên khổ A4. Đổi cỡ
+          khung sẽ đặt lại padding theo cỡ đó.
         </p>
       </div>
 

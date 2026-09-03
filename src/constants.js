@@ -22,13 +22,30 @@ export const TEXT_SWATCHES = [
 
 export const STAGE_SWATCHES = ['#525659', '#1e1e1e', '#8a8f98', '#eef1f5']
 
-// Nhãn "3 × 4" = cao 3, rộng 4 -> w là số sau, h là số trước
+/* Nhãn "3 × 4" = cao 3, rộng 4 -> w là số sau, h là số trước.
+   Mỗi cỡ mang theo padding riêng (mm), tên trường giống hệt DEFAULT_ITEM để
+   chọn cỡ là spread thẳng vào item được. Khung càng thấp thì chừa trên/dưới
+   càng ít, nếu không phần chữ còn lại quá hẹp: khung cao 1.5 cm mà chừa 2 mm
+   mỗi bên là mất luôn 27% chiều cao. */
 export const FRAME_SIZES = [
-  { label: 'Không khung', w: 0, h: 0 },
-  { label: '3 × 4 cm', w: 4, h: 3 },
-  { label: '3 × 5 cm', w: 5, h: 3 },
-  { label: '2 × 6 cm', w: 6, h: 2 },
+  { label: 'Không khung', w: 0, h: 0, padTop: 2, padRight: 2, padBottom: 2, padLeft: 2 },
+  { label: '3 × 4 cm', w: 4, h: 3, padTop: 2, padRight: 2, padBottom: 2, padLeft: 2 },
+  { label: '3 × 5 cm', w: 5, h: 3, padTop: 2, padRight: 2, padBottom: 2, padLeft: 2 },
+  { label: '1.5 × 6 cm', w: 6, h: 1.5, padTop: 1, padRight: 2, padBottom: 1, padLeft: 2 },
 ]
+
+// Lấy phần kích thước + padding của một cỡ khung, bỏ lại label
+export const frameFields = ({ w, h, padTop, padRight, padBottom, padLeft }) => ({
+  w,
+  h,
+  padTop,
+  padRight,
+  padBottom,
+  padLeft,
+})
+
+export const findFrameSize = (w, h) =>
+  FRAME_SIZES.find((size) => size.w === w && size.h === h) || null
 
 export const DEFAULT_ITEM = {
   text: 'Nội dung mới ✨',
@@ -39,12 +56,7 @@ export const DEFAULT_ITEM = {
   underline: false,
   color: '#111111',
   lineHeight: 1.5,
-  w: 4, // rộng (cm) - 0 nghĩa là không khung
-  h: 3, // cao (cm)
-  padTop: 2, // padding trong khung, đơn vị mm
-  padRight: 2,
-  padBottom: 2,
-  padLeft: 2,
+  ...frameFields(FRAME_SIZES[1]), // w, h và padding của cỡ 3 × 4
   showPad: true, // tô màu vùng padding (guide, theo từng item)
   elements: [], // chữ / ảnh con đặt tự do trong item
 }
