@@ -31,7 +31,7 @@ export default function PreviewTab() {
         </span>
         <Slider
           min={25}
-          max={200}
+          max={500}
           step={5}
           disabled={page.zoomMode === 'auto'}
           value={page.zoomLevel}

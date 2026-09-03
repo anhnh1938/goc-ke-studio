@@ -63,14 +63,6 @@ body {
   pointer-events: none;
 }
 
-/* Đang chọn ảnh -> các control chữ vô nghĩa; chưa chọn thành phần con ->
-   nhóm vị trí vô nghĩa */
-.settings-grid.img-mode > .form-group.typo,
-.form-group.dimmed {
-  opacity: 0.45;
-  pointer-events: none;
-}
-
 .form-group {
   margin-bottom: 18px;
   /* mặc định grid item là min-width: auto -> nội dung rộng sẽ đẩy tràn cả panel */
@@ -515,6 +507,27 @@ body {
 .btn-row .ant-upload {
   display: block;
   width: 100%;
+}
+
+/* Modal tùy chỉnh thành phần con */
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* Nhóm cuối trong modal không cần khoảng trống dưới */
+.ant-modal-body .settings-grid > .form-group:last-child {
+  margin-bottom: 0;
+}
+
+.el-preview {
+  display: block;
+  max-width: 100%;
+  max-height: 160px;
+  border: 1px solid #e2e5ea;
+  border-radius: 6px;
+  background: #fafbfc;
 }
 
 .check-row .ant-checkbox-wrapper {

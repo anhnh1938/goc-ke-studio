@@ -51,8 +51,10 @@ src/
     FrameItem.jsx           # một item trên trang A4
     SubElement.jsx          # chữ / ảnh con đặt tự do, kéo & resize bằng pointer event
     SettingsPanel.jsx       # panel phải, 2 tab
-    TextTab.jsx             # tab Văn bản
+    TextTab.jsx             # tab Văn bản (sửa item + text chính)
     PreviewTab.jsx          # tab Preview
+    ElementModal.jsx        # modal tùy chỉnh một thành phần con
+    TypographyFields.jsx    # nhóm control chữ dùng chung cho panel và modal
     Swatches.jsx            # ColorPicker + dãy màu mẫu
 public/
   fonts/NotoColorEmoji.ttf  # font emoji màu, khai báo @font-face là "iOSEmojiCustom"
@@ -85,10 +87,11 @@ cỡ chữ tính bằng **px** — đúng như bản gốc.
 
 ## Tính năng
 
-- Thêm / nhân bản / xóa / đổi thứ tự item (nút hoặc kéo thả trực tiếp trên trang A4)
+- Thêm / nhân bản / xóa item; đổi thứ tự bằng kéo thả trực tiếp trên trang A4
 - Font, cỡ chữ, đậm / nghiêng / gạch chân, màu, độ giãn dòng
 - Khung kích thước thật: 3×4, 3×5, 2×6 cm hoặc không khung
 - Padding 4 góc (khoá đều 4 góc, tô màu vùng padding kiểu DevTools)
-- Thành phần con: thêm chữ / ảnh, kéo để di chuyển, kéo ô cam để resize, xoay, đổi lớp z
+- Thành phần con: thêm chữ / ảnh, kéo để di chuyển, kéo ô cam để resize. Bấm vào
+  thành phần trong danh sách để mở modal tùy chỉnh (nội dung, font, vị trí, xoay, lớp z)
 - Thu phóng tự động vừa khung hoặc tùy chỉnh 25–200%
 - Lề trang, khoảng cách item, bật/tắt đường guide, đổi màu nền vùng xem trước

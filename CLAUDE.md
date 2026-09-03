@@ -34,9 +34,19 @@ Hai cấp dữ liệu:
 - **element** (thành phần con) — chữ hoặc ảnh đặt tự do (absolute) bên trong một item
 
 Selection có hai tầng: `selectedId` (item) và `selectedElId` (thành phần con, `null` =
-đang sửa text chính của item). Selector `selectTarget` quyết định các control chữ ở panel
-tác động lên cái nào. Action `updateTarget` đi theo cùng quy tắc, còn `updateSelected`
-luôn tác động lên item.
+không chọn thành phần con nào).
+
+**Phân chia chỗ sửa:** panel bên phải (`TextTab`) chỉ sửa item và text chính của nó, luôn
+dùng `updateSelected`. Thành phần con sửa trong `ElementModal`, luôn dùng `updateTarget`
+(action này tự trỏ vào thành phần con đang chọn). Đừng gộp lại — bản trước dùng chung
+control cho cả hai và rất khó đoán đang sửa cái gì.
+
+`TypographyFields` là nhóm control chữ dùng chung cho cả hai chỗ; nó render ra các
+`.form-group` nên phải đặt trong một `.settings-grid`.
+
+Modal điều khiển bằng `elModalOpen` trong store. Nó tự mở khi thêm thành phần
+(`addElement`) và tự đóng khi xoá thành phần hoặc đổi sang item khác (`selectItem`) —
+nếu không modal sẽ trỏ vào một thành phần không còn tồn tại.
 
 ## Những chỗ dễ sai
 
@@ -113,3 +123,8 @@ thường chỉ lộ ra ở một trong hai.
 Với logic store/DOM, có thể mount app trong jsdom rồi bắn action qua
 `useEditorStore.getState()` và kiểm tra DOM. Lưu ý: `renderToString` **không** phản ánh
 thay đổi của zustand (giới hạn của server snapshot), phải dùng `react-dom/client` + `act`.
+
+Cần click thật (mở modal, kéo thả) thì `npm i --no-save puppeteer-core` rồi
+`puppeteer.launch({ executablePath: <đường dẫn msedge.exe>, headless: 'new' })`. Script
+phải nằm **trong** thư mục dự án, nếu không node không resolve được `node_modules`. Nhớ
+chặn request `.ttf` cho nhanh, và gỡ puppeteer sau khi chạy xong.

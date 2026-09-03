@@ -32,10 +32,17 @@ export const useEditorStore = create((set, get) => ({
   selectedElId: null,
   page: { ...DEFAULT_PAGE },
   scale: 1,
+  elModalOpen: false, // modal tùy chỉnh thành phần con
 
   // ---------- CHỌN ----------
-  selectItem: (id, elId = null) => set({ selectedId: id, selectedElId: elId }),
+  // Đổi item thì đóng modal: thành phần con đang mở không còn thuộc item nào nữa
+  selectItem: (id, elId = null) =>
+    set({ selectedId: id, selectedElId: elId, elModalOpen: false }),
   selectElement: (elId) => set({ selectedElId: elId }),
+
+  // ---------- MODAL THÀNH PHẦN CON ----------
+  openElModal: (elId) => set({ selectedElId: elId, elModalOpen: true }),
+  closeElModal: () => set({ elModalOpen: false }),
 
   // ---------- THÊM / NHÂN BẢN / XÓA ITEM ----------
   addItem: () =>
@@ -139,6 +146,8 @@ export const useEditorStore = create((set, get) => ({
           elements: [...it.elements, el],
         })),
         selectedElId: el.id,
+        // Thêm xong mở modal luôn để chỉnh nội dung / vị trí
+        elModalOpen: true,
       }
     }),
 
@@ -151,6 +160,7 @@ export const useEditorStore = create((set, get) => ({
           elements: it.elements.filter((el) => el.id !== s.selectedElId),
         })),
         selectedElId: null,
+        elModalOpen: false,
       }
     }),
 
@@ -188,6 +198,3 @@ export const selectSelectedEl = (s) => {
   if (!item || s.selectedElId === null) return null
   return item.elements.find((el) => el.id === s.selectedElId) || null
 }
-
-// Đối tượng mà các control chữ đang tác động: thành phần con, hoặc text chính
-export const selectTarget = (s) => selectSelectedEl(s) || selectSelectedItem(s)
