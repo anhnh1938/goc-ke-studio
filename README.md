@@ -91,7 +91,8 @@ cỡ chữ tính bằng **px** — đúng như bản gốc.
 - Font, cỡ chữ, đậm / nghiêng / gạch chân, màu, độ giãn dòng
 - Khung kích thước thật: 3×4, 3×5, 2×6 cm hoặc không khung
 - Padding 4 góc (khoá đều 4 góc, tô màu vùng padding kiểu DevTools)
-- Thành phần con: thêm chữ / ảnh, kéo để di chuyển, kéo ô cam để resize. Bấm vào
-  thành phần trong danh sách để mở modal tùy chỉnh (nội dung, font, vị trí, xoay, lớp z)
+- Thành phần con: thêm chữ / ảnh, nhân bản, xóa; kéo để di chuyển, kéo ô cam để resize.
+  Bấm vào thành phần trong danh sách để mở modal tùy chỉnh (nội dung, font, vị trí,
+  xoay, lớp z)
 - Thu phóng tự động vừa khung hoặc tùy chỉnh 25–200%
 - Lề trang, khoảng cách item, bật/tắt đường guide, đổi màu nền vùng xem trước

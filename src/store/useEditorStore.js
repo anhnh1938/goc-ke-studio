@@ -151,6 +151,39 @@ export const useEditorStore = create((set, get) => ({
       }
     }),
 
+  // Nhân bản thành phần con đang chọn, lệch 2mm cho khỏi chồng khít lên bản gốc
+  copyElement: () =>
+    set((s) => {
+      const item = s.items.find((it) => it.id === s.selectedId)
+      if (!item || s.selectedElId === null) return s
+      const index = item.elements.findIndex((el) => el.id === s.selectedElId)
+      if (index === -1) return s
+      const src = item.elements[index]
+
+      // Khung có kích thước thật -> không cho bản sao lệch ra ngoài lòng khung
+      // (khung đặt overflow: hidden nên ra ngoài là mất hút).
+      const innerW = item.w ? item.w * 10 - item.padLeft - item.padRight : null
+      const innerH = item.h ? item.h * 10 - item.padTop - item.padBottom : null
+      const shift = (v, inner) =>
+        inner === null ? v + 2 : Math.max(0, Math.min(v + 2, inner - 2))
+
+      const topZ = item.elements.reduce((max, el) => Math.max(max, el.z ?? 2), 1)
+      const clone = {
+        ...src,
+        id: nextElId++,
+        x: shift(src.x, innerW),
+        y: shift(src.y, innerH),
+        z: topZ + 1,
+      }
+
+      const elements = [...item.elements]
+      elements.splice(index + 1, 0, clone) // chèn ngay sau bản gốc
+      return {
+        items: mapItem(s.items, item.id, (it) => ({ ...it, elements })),
+        selectedElId: clone.id,
+      }
+    }),
+
   deleteElement: () =>
     set((s) => {
       if (s.selectedId === null || s.selectedElId === null) return s

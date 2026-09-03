@@ -37,6 +37,8 @@ export default function TextTab() {
   const openElModal = useEditorStore((s) => s.openElModal)
   const updateSelected = useEditorStore((s) => s.updateSelected)
   const addElement = useEditorStore((s) => s.addElement)
+  const copyElement = useEditorStore((s) => s.copyElement)
+  const deleteElement = useEditorStore((s) => s.deleteElement)
 
   const [padLock, setPadLock] = useState(false)
 
@@ -229,6 +231,28 @@ export default function TextTab() {
             </Button>
           </Upload>
         </div>
+        {/* Hai nút này tác động lên thành phần đang chọn.
+            Nhãn phải ghi rõ "thành phần" để không lẫn với nút Nhân bản / Xóa
+            của item ở đầu panel. */}
+        <div className="btn-row" style={{ marginTop: 8 }}>
+          <Button
+            block
+            icon={<CopyOutlined />}
+            disabled={!subEl}
+            onClick={copyElement}
+          >
+            Nhân bản thành phần
+          </Button>
+          <Button
+            block
+            danger
+            icon={<CloseOutlined />}
+            disabled={!subEl}
+            onClick={deleteElement}
+          >
+            Xóa thành phần
+          </Button>
+        </div>
 
         <div className="item-chips">
           <Button
@@ -253,8 +277,8 @@ export default function TextTab() {
           ))}
         </div>
         <p className="hint">
-          Bấm vào một thành phần để mở bảng tùy chỉnh. Kéo trực tiếp thành phần trên
-          trang A4 để đổi vị trí.
+          Bấm vào một thành phần bên dưới để mở bảng tùy chỉnh; Nhân bản / Xóa áp cho
+          thành phần đang chọn. Kéo trực tiếp thành phần trên trang A4 để đổi vị trí.
         </p>
       </div>
 

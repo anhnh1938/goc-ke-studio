@@ -88,6 +88,11 @@ không chịu co lại và sẽ tràn khỏi panel. Dùng class `.btn-row` (flex
 90px`), hoặc `.btn-row.tight` cho nhóm nút hẹp chỉ có icon (B/I/U) — chia đều, không wrap.
 Cách này cũng đúng với bản gốc hơn: `legacy/index.html` dùng nút rời có gap, không dính liền.
 
+**Nhãn nút phải nói rõ đối tượng.** Panel có hai cụm hành động lồng nhau — của item và
+của thành phần con — nên nút thành phần con ghi hẳn "Nhân bản thành phần" / "Xóa thành
+phần". Dùng nhãn trùng nhau ("Nhân bản" / "Xóa" cho cả hai) thì cả người dùng lẫn test
+tự động đều bấm nhầm.
+
 **Mọi `.form-group` cần `min-width: 0`** — grid item mặc định `min-width: auto` nên nội
 dung rộng sẽ đẩy tràn cả panel.
 
