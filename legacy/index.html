@@ -1,0 +1,1982 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>A4 Live Editor - Google Fonts + iOS Emoji</title>
+
+    <!-- 1. Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=DynaPuff:wght@400..700&family=Inter:wght@400;600;700&family=Roboto:wght@400;700&family=Merriweather:wght@400;700&family=Be+Vietnam+Pro:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* 2. Khai báo Font Emoji Local */
+      @font-face {
+        font-family: "iOSEmojiCustom";
+        src: url("./NotoColorEmoji.ttf") format("truetype");
+        font-display: swap;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Inter", system-ui, sans-serif;
+        background-color: #eef1f5;
+        color: #333;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      /* Layout chính: TRÁI 2/3 (preview A4) - PHẢI 1/3 (settings) */
+      .app-layout {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        grid-template-rows: 100vh;
+        height: 100vh;
+      }
+
+      /* ================= BÊN PHẢI: Bảng điều khiển Settings ================= */
+      .settings-section {
+        grid-column: 2; /* cột phải, dù đứng trước trong HTML */
+        grid-row: 1;
+        background: #ffffff;
+        border-left: 1px solid #ddd;
+        padding: 24px 28px 40px;
+        overflow-y: auto;
+        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.05);
+      }
+
+      .settings-section h2 {
+        font-size: 20px;
+        margin-bottom: 16px;
+        color: #111;
+      }
+
+      /* Tabs của panel setting */
+      .tabs {
+        display: flex;
+        gap: 4px;
+        border-bottom: 1px solid #e2e5ea;
+        margin-bottom: 18px;
+      }
+
+      .tab {
+        flex: 1;
+        padding: 10px 12px;
+        border: none;
+        background: transparent;
+        font-size: 14px;
+        font-weight: 600;
+        color: #7a828d;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+        transition: color 0.2s, border-color 0.2s;
+      }
+
+      .tab:hover {
+        color: #111;
+      }
+
+      .tab.active {
+        color: #007aff;
+        border-bottom-color: #007aff;
+      }
+
+      /* :not(.active) để thắng specificity của .settings-grid { display: grid } */
+      .tab-panel:not(.active) {
+        display: none;
+      }
+
+      /* Lưới 2 cột cho các nhóm setting ngắn */
+      .settings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 0 24px;
+        align-content: start;
+      }
+
+      /* Khoá panel khi không có item nào được chọn */
+      .settings-grid.locked > .form-group:not(.always-on) {
+        opacity: 0.45;
+        pointer-events: none;
+      }
+
+      /* Đang chọn ảnh -> các control chữ vô nghĩa; chưa chọn thành phần con ->
+         nhóm vị trí vô nghĩa */
+      .settings-grid.img-mode > .form-group.typo,
+      .form-group.dimmed {
+        opacity: 0.45;
+        pointer-events: none;
+      }
+
+      .form-group {
+        margin-bottom: 18px;
+      }
+
+      .form-group.full {
+        grid-column: 1 / -1;
+      }
+
+      .form-group label {
+        display: block;
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 6px;
+        color: #444;
+      }
+
+      .form-group label .value-badge {
+        float: right;
+        font-weight: 600;
+        color: #007aff;
+        font-variant-numeric: tabular-nums;
+      }
+
+      select,
+      input[type="number"],
+      textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+        outline: none;
+        background: #fff;
+        transition: border-color 0.2s;
+      }
+
+      select:focus,
+      input[type="number"]:focus,
+      textarea:focus {
+        border-color: #007aff;
+      }
+
+      textarea {
+        resize: vertical;
+        min-height: 120px;
+        font-family: inherit;
+        line-height: 1.5;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        accent-color: #007aff;
+      }
+
+      /* Nhóm nút quản lý item */
+      .item-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .btn-action {
+        flex: 1 1 90px;
+        padding: 10px 8px;
+        border-radius: 6px;
+        border: 1px solid #007aff;
+        background: #007aff;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: filter 0.2s, background 0.2s;
+      }
+
+      .btn-action:hover {
+        filter: brightness(1.08);
+      }
+
+      .btn-action.secondary {
+        background: #f1f5fb;
+        color: #0a58c2;
+      }
+
+      .btn-action.danger {
+        background: #fff1f0;
+        color: #c0392b;
+        border-color: #f0b4ae;
+      }
+
+      .btn-action:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        filter: none;
+      }
+
+      /* Lưới nhập padding 4 góc */
+      .pad-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        font-weight: 600;
+        font-size: 14px;
+        color: #444;
+        margin-bottom: 6px;
+      }
+
+      .pad-head-actions {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-shrink: 0;
+      }
+
+      /* Ô màu mẫu đứng cạnh nhãn "Hiện màu" */
+      .pad-legend {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        background: rgba(46, 160, 67, 0.35);
+        border: 1px solid rgba(46, 160, 67, 0.55);
+      }
+
+      .pad-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+
+      .pad-grid .pad-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .pad-grid .pad-cell span {
+        font-size: 11px;
+        font-weight: 600;
+        color: #7a828d;
+        text-align: center;
+      }
+
+      .pad-grid input[type="number"] {
+        padding: 8px 6px;
+        text-align: center;
+      }
+
+      /* Danh sách item để chọn nhanh */
+      .item-chips {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+
+      .chip {
+        min-width: 30px;
+        padding: 5px 9px;
+        border-radius: 999px;
+        border: 1px solid #ccd2da;
+        background: #fff;
+        font-size: 12px;
+        font-weight: 600;
+        color: #5b636d;
+        cursor: pointer;
+      }
+
+      .chip.active {
+        background: #007aff;
+        border-color: #007aff;
+        color: #fff;
+      }
+
+      /* Styling nhóm Nút Format (Bold, Italic, Underline) */
+      .style-buttons {
+        display: flex;
+        gap: 10px;
+      }
+
+      .btn-style {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        background: #f8f9fa;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-style:hover {
+        background: #e9ecef;
+      }
+
+      .btn-style.active {
+        background: #007aff;
+        color: white;
+        border-color: #007aff;
+      }
+
+      /* Chọn màu chữ */
+      .color-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      input[type="color"] {
+        width: 52px;
+        height: 40px;
+        padding: 2px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        background: #fff;
+        cursor: pointer;
+      }
+
+      .swatches {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .swatch {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 1px #ccc;
+        cursor: pointer;
+        transition: transform 0.15s;
+      }
+
+      .swatch:hover {
+        transform: scale(1.15);
+      }
+
+      .swatch.active {
+        box-shadow: 0 0 0 2px #007aff;
+      }
+
+      /* Chọn kích thước khung (3x4, 3x5, 2x6) */
+      .size-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .btn-size {
+        flex: 1 1 70px;
+        padding: 10px 8px;
+        border: 1px solid #ccc;
+        background: #f8f9fa;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-size:hover {
+        background: #e9ecef;
+      }
+
+      .btn-size.active {
+        background: #007aff;
+        color: #fff;
+        border-color: #007aff;
+      }
+
+      /* Nhóm checkbox: .form-group label (0,1,1) thắng .check (0,1,0) nên viết đủ 2 phần */
+      .check-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 18px;
+      }
+
+      .form-group label.check {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 500;
+        font-size: 14px;
+        margin-bottom: 0;
+        cursor: pointer;
+      }
+
+      .check input {
+        accent-color: #007aff;
+        width: 16px;
+        height: 16px;
+      }
+
+      .hint {
+        font-size: 12px;
+        color: #888;
+        margin-top: 6px;
+      }
+
+      /* ================= BÊN TRÁI: Vùng Preview khổ giấy A4 ================= */
+      .preview-section {
+        grid-column: 1; /* cột trái */
+        grid-row: 1;
+        background-color: #525659;
+        padding: 24px 16px;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* safe: khi zoom lớn hơn khung thì không bị cắt mất mép trái */
+        align-items: safe center;
+        gap: 12px;
+      }
+
+      .preview-toolbar {
+        color: #d7dade;
+        font-size: 12px;
+        letter-spacing: 0.03em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+      }
+
+      /* Khung giữ chỗ đúng bằng kích thước trang sau khi thu nhỏ.
+         flex-shrink: 0 là bắt buộc: preview-section là flex column cao 100vh,
+         nếu không khóa lại thì trang A4 bị bóp dẹp theo chiều cao. */
+      .a4-viewport {
+        position: relative;
+        flex-shrink: 0;
+      }
+
+      .a4-scaler {
+        transform-origin: top left;
+      }
+
+      /* Mô phỏng chính xác tỉ lệ khổ giấy A4 (210mm x 297mm) */
+      .a4-page {
+        width: 210mm;
+        min-height: 297mm;
+        padding: 20mm;
+        background: white;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Các item xếp từ góc trên trái, tự xuống hàng khi hết bề ngang trang */
+      .items-area {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        align-content: flex-start;
+        justify-content: flex-start;
+        gap: 5mm;
+      }
+
+      .frame-item {
+        position: relative;
+        flex: 0 0 auto;
+        max-width: 100%;
+        cursor: grab;
+      }
+
+      .frame-item:active {
+        cursor: grabbing;
+      }
+
+      .frame-item.dragging {
+        opacity: 0.4;
+      }
+
+      /* Vạch xanh báo vị trí sẽ thả vào */
+      .frame-item.drop-before::before,
+      .frame-item.drop-after::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        border-radius: 2px;
+        background: #007aff;
+        z-index: 3;
+      }
+
+      .frame-item.drop-before::before {
+        left: -5px;
+      }
+
+      .frame-item.drop-after::after {
+        right: -5px;
+      }
+
+      .a4-text {
+        position: relative; /* mốc toạ độ cho các thành phần con */
+        word-break: break-word;
+        white-space: pre-wrap;
+        /* Mặc định kết hợp font DynaPuff và Emoji */
+        font-family: "DynaPuff", "iOSEmojiCustom", cursive;
+        font-size: 10px;
+        line-height: 1.5;
+        color: #111111;
+      }
+
+      /* Khung kích thước thật (3x4, 3x5, 2x6 cm): text nằm bên trong khung */
+      .a4-text.framed {
+        width: var(--frame-w);
+        height: var(--frame-h);
+        border: 1px dashed #9aa3af;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      /* min-width: 0 để chữ dài vẫn xuống dòng được bên trong khung flex */
+      .a4-text.framed > .a4-text-inner {
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      /* Text chính nằm ở lớp 1: thành phần con đặt z = 0 sẽ chui xuống dưới nó,
+         z >= 2 thì nổi lên trên. */
+      .a4-text-inner {
+        position: relative;
+        z-index: 1;
+      }
+
+      /* Item đang được chọn */
+      .frame-item.selected .a4-text {
+        outline: 2px solid #007aff;
+        outline-offset: 2px;
+      }
+
+      /* Thành phần con (chữ / ảnh) đặt tự do trong item */
+      .sub-el {
+        position: absolute;
+        cursor: move;
+        touch-action: none;
+        user-select: none;
+        max-width: 100%;
+      }
+
+      .sub-el.text-el {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .sub-el.image-el img {
+        display: block;
+        width: 100%;
+        height: auto;
+        pointer-events: none;
+      }
+
+      /* Khi đặt chiều cao cố định thì ảnh co vừa khung, không méo */
+      .sub-el.image-el.fixed-h img {
+        height: 100%;
+        object-fit: contain;
+      }
+
+      /* Tay nắm kéo đổi kích thước, chỉ hiện khi thành phần được chọn */
+      .resize-handle {
+        position: absolute;
+        /* nằm trong lòng thành phần để không bị overflow:hidden của khung cắt mất */
+        right: 0;
+        bottom: 0;
+        width: 9px;
+        height: 9px;
+        border-radius: 2px;
+        background: #ff9500;
+        border: 1px solid #fff;
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+        cursor: nwse-resize;
+        display: none;
+        z-index: 2; /* luôn nổi trên nội dung của chính thành phần đó */
+      }
+
+      .sub-el.selected .resize-handle {
+        display: block;
+      }
+
+      .sub-el.selected {
+        outline: 1.5px solid #ff9500;
+        outline-offset: 1px;
+      }
+
+      .sub-el.dragging-el {
+        opacity: 0.75;
+      }
+
+      /* Nhãn nhỏ ghi kích thước khung, không nằm trong vùng in */
+      /* Nhãn là phần tử anh em của .a4-text nên không thừa kế style của item.
+         Set cứng line-height/weight để hình học của nhãn luôn cố định. */
+      .frame-caption {
+        font-family: "Inter", sans-serif;
+        font-size: 11px;
+        line-height: 1.4;
+        font-weight: 500;
+        font-style: normal;
+        letter-spacing: 0;
+        color: #98a2b3;
+        text-align: left;
+        margin-top: 2mm;
+      }
+
+      .frame-caption.hidden {
+        display: none;
+      }
+
+      /* Nút thao tác nổi trên từng item */
+      .item-tools {
+        position: absolute;
+        top: -12px;
+        right: -12px;
+        display: none;
+        gap: 4px;
+        z-index: 2;
+      }
+
+      .frame-item:hover .item-tools,
+      .frame-item.selected .item-tools {
+        display: flex;
+      }
+
+      .item-tools button {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 1px solid #ccd2da;
+        background: #fff;
+        font-family: "Inter", sans-serif;
+        font-size: 12px;
+        line-height: 1;
+        color: #5b636d;
+        cursor: pointer;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+
+      .item-tools button:hover {
+        background: #007aff;
+        border-color: #007aff;
+        color: #fff;
+      }
+
+      .item-tools button.del:hover {
+        background: #c0392b;
+        border-color: #c0392b;
+      }
+
+      /* Tô màu vùng padding (kiểu DevTools).
+         2 lớp background: lớp trắng phủ đúng content-box, lớp xanh phủ padding-box
+         -> phần chênh lệch giữa 2 lớp chính là vùng padding. */
+      .a4-text.show-padding {
+        background-image: linear-gradient(#ffffff, #ffffff),
+          linear-gradient(rgba(46, 160, 67, 0.35), rgba(46, 160, 67, 0.35));
+        background-origin: content-box, padding-box;
+        background-clip: content-box, padding-box;
+        background-repeat: no-repeat;
+      }
+
+      /* Bật/tắt các đường guide từ tab Preview */
+      .items-area.hide-border .a4-text.framed {
+        border-color: transparent;
+      }
+
+      .items-area.hide-caption .frame-caption {
+        display: none;
+      }
+
+      /* Trang trống */
+      .empty-note {
+        font-family: "Inter", sans-serif;
+        font-size: 13px;
+        color: #b6bcc4;
+      }
+
+      .empty-note.hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-layout">
+      <!-- ============ BÊN PHẢI (1/3): Bảng Cấu Hình ============ -->
+      <aside class="settings-section">
+        <h2>Tùy Chỉnh</h2>
+
+        <!-- Tab điều hướng -->
+        <div class="tabs" id="tabs" role="tablist">
+          <button type="button" class="tab active" data-tab="text" role="tab">
+            Văn bản
+          </button>
+          <button type="button" class="tab" data-tab="preview" role="tab">
+            Preview
+          </button>
+        </div>
+
+        <!-- ---------- TAB: VĂN BẢN ---------- -->
+        <div class="settings-grid tab-panel active" id="panel-text" role="tabpanel">
+          <!-- 0. Quản lý item -->
+          <div class="form-group full always-on">
+            <label>Item trên trang:</label>
+            <div class="item-actions">
+              <button type="button" class="btn-action" id="btn-add">
+                + Thêm mới
+              </button>
+              <button type="button" class="btn-action secondary" id="btn-copy">
+                ⧉ Nhân bản
+              </button>
+              <button type="button" class="btn-action danger" id="btn-delete">
+                ✕ Xóa
+              </button>
+            </div>
+            <div class="item-actions" style="margin-top: 8px">
+              <button type="button" class="btn-action secondary" id="btn-move-left">
+                ← Lùi
+              </button>
+              <button type="button" class="btn-action secondary" id="btn-move-right">
+                Tiến →
+              </button>
+            </div>
+            <div class="item-chips" id="item-chips"></div>
+            <p class="hint" id="item-status"></p>
+            <p class="hint">Có thể kéo thả item ngay trên trang A4 để đổi thứ tự.</p>
+          </div>
+
+          <!-- 1. Nội dung văn bản -->
+          <div class="form-group full typo">
+            <label for="text-content">Nội dung văn bản (kèm Emoji):</label>
+            <textarea
+              id="text-content"
+              placeholder="Nhập nội dung vào đây..."
+            ></textarea>
+          </div>
+
+          <!-- 2. Chọn Font chữ -->
+          <div class="form-group typo">
+            <label for="font-family">Chọn Font chữ (kèm Emoji iOS):</label>
+            <select id="font-family">
+              <option value="'DynaPuff', 'iOSEmojiCustom', cursive">
+                DynaPuff (Google Font)
+              </option>
+              <option value="'Caveat', 'iOSEmojiCustom', cursive">
+                Caveat (Viết tay)
+              </option>
+              <option value="'Inter', 'iOSEmojiCustom', sans-serif">
+                Inter (Hiện đại)
+              </option>
+              <option value="'Roboto', 'iOSEmojiCustom', sans-serif">
+                Roboto (Tiêu chuẩn)
+              </option>
+              <option value="'Be Vietnam Pro', 'iOSEmojiCustom', sans-serif">
+                Be Vietnam Pro (Tiếng Việt)
+              </option>
+              <option value="'Merriweather', 'iOSEmojiCustom', serif">
+                Merriweather (Có chân)
+              </option>
+            </select>
+          </div>
+
+          <!-- 3. Chỉnh Font Size -->
+          <div class="form-group typo">
+            <label for="font-size">Kích thước chữ (px):</label>
+            <input type="number" id="font-size" value="10" min="6" max="200" />
+          </div>
+
+          <!-- 4. Định dạng Đậm / Nghiêng / Gạch chân -->
+          <div class="form-group typo">
+            <label>Kiểu chữ:</label>
+            <div class="style-buttons">
+              <button type="button" id="btn-bold" class="btn-style">B</button>
+              <button
+                type="button"
+                id="btn-italic"
+                class="btn-style"
+                style="font-style: italic"
+              >
+                I
+              </button>
+              <button
+                type="button"
+                id="btn-underline"
+                class="btn-style"
+                style="text-decoration: underline"
+              >
+                U
+              </button>
+            </div>
+          </div>
+
+          <!-- 5. Màu chữ -->
+          <div class="form-group typo">
+            <label for="text-color">Màu chữ:</label>
+            <div class="color-row">
+              <input type="color" id="text-color" value="#111111" />
+              <div class="swatches" id="color-swatches">
+                <span
+                  class="swatch active"
+                  data-color="#111111"
+                  style="background: #111111"
+                ></span>
+                <span
+                  class="swatch"
+                  data-color="#d32f2f"
+                  style="background: #d32f2f"
+                ></span>
+                <span
+                  class="swatch"
+                  data-color="#1976d2"
+                  style="background: #1976d2"
+                ></span>
+                <span
+                  class="swatch"
+                  data-color="#2e7d32"
+                  style="background: #2e7d32"
+                ></span>
+                <span
+                  class="swatch"
+                  data-color="#f9a825"
+                  style="background: #f9a825"
+                ></span>
+                <span
+                  class="swatch"
+                  data-color="#6a1b9a"
+                  style="background: #6a1b9a"
+                ></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6. Độ giãn dòng -->
+          <div class="form-group typo">
+            <label for="line-height">
+              Độ giãn dòng:
+              <span class="value-badge" id="line-height-value">1.5</span>
+            </label>
+            <input
+              type="range"
+              id="line-height"
+              min="0.8"
+              max="3"
+              step="0.1"
+              value="1.5"
+            />
+          </div>
+
+          <!-- 7. Kích thước khung hiển thị trên preview -->
+          <div class="form-group">
+            <label>Kích thước hình trên preview:</label>
+            <div class="size-buttons" id="frame-sizes">
+              <button type="button" class="btn-size" data-w="0" data-h="0">
+                Không khung
+              </button>
+              <!-- Nhãn "3 × 4" = cao 3, rộng 4 -> data-w là số sau, data-h là số trước -->
+              <button type="button" class="btn-size active" data-w="4" data-h="3">
+                3 × 4 cm
+              </button>
+              <button type="button" class="btn-size" data-w="5" data-h="3">
+                3 × 5 cm
+              </button>
+              <button type="button" class="btn-size" data-w="6" data-h="2">
+                2 × 6 cm
+              </button>
+            </div>
+            <p class="hint">
+              Text sẽ nằm gọn trong khung, khung đúng kích thước thật trên khổ A4.
+            </p>
+          </div>
+
+          <!-- 8. Padding từng góc của item -->
+          <div class="form-group full">
+            <div class="pad-head">
+              <span>Padding trong khung (mm):</span>
+              <div class="pad-head-actions">
+                <label class="check">
+                  <input type="checkbox" id="pad-lock" />
+                  Đều 4 góc
+                </label>
+                <label class="check">
+                  <input type="checkbox" id="show-padding" checked />
+                  <span class="pad-legend"></span>
+                  Hiện màu
+                </label>
+              </div>
+            </div>
+            <div class="pad-grid">
+              <div class="pad-cell">
+                <span>Trên</span>
+                <input type="number" id="pad-top" value="2" min="0" max="50" step="0.5" />
+              </div>
+              <div class="pad-cell">
+                <span>Phải</span>
+                <input type="number" id="pad-right" value="2" min="0" max="50" step="0.5" />
+              </div>
+              <div class="pad-cell">
+                <span>Dưới</span>
+                <input type="number" id="pad-bottom" value="2" min="0" max="50" step="0.5" />
+              </div>
+              <div class="pad-cell">
+                <span>Trái</span>
+                <input type="number" id="pad-left" value="2" min="0" max="50" step="0.5" />
+              </div>
+            </div>
+            <p class="hint">
+              Padding ăn vào bên trong khung (box-sizing: border-box) nên kích thước
+              ngoài của khung vẫn đúng 3 × 4 cm.
+            </p>
+          </div>
+
+          <!-- 9. Thành phần bên trong item (ít dùng, để cuối panel) -->
+          <div class="form-group full always-on">
+            <label>Thành phần trong item:</label>
+            <div class="item-actions" style="margin-bottom: 8px">
+              <button type="button" class="btn-action secondary" id="btn-front">
+                ⬆ Lên trên
+              </button>
+              <button type="button" class="btn-action secondary" id="btn-back">
+                ⬇ Xuống dưới
+              </button>
+            </div>
+            <div class="item-actions">
+              <button type="button" class="btn-action secondary" id="btn-add-text">
+                + Chữ
+              </button>
+              <button type="button" class="btn-action secondary" id="btn-add-image">
+                + Ảnh
+              </button>
+              <button type="button" class="btn-action danger" id="btn-del-el">
+                ✕ Xóa thành phần
+              </button>
+              <input type="file" id="image-input" accept="image/*" hidden />
+            </div>
+            <div class="item-chips" id="el-chips"></div>
+            <p class="hint">Kéo trực tiếp thành phần trên trang để đổi vị trí trong item.</p>
+          </div>
+
+          <!-- 10. Vị trí / kích thước của thành phần con -->
+          <div class="form-group full" id="group-pos">
+            <label>Vị trí trong item (mm):</label>
+            <div class="pad-grid">
+              <div class="pad-cell">
+                <span>X (trái)</span>
+                <input type="number" id="el-x" value="0" step="0.5" />
+              </div>
+              <div class="pad-cell">
+                <span>Y (trên)</span>
+                <input type="number" id="el-y" value="0" step="0.5" />
+              </div>
+              <div class="pad-cell">
+                <span>Rộng</span>
+                <input type="number" id="el-w" value="20" min="1" step="0.5" />
+              </div>
+              <div class="pad-cell">
+                <span>Cao</span>
+                <input type="number" id="el-h" value="0" min="0" step="0.5" />
+              </div>
+              <div class="pad-cell">
+                <span>Xoay (°)</span>
+                <input type="number" id="el-rotate" value="0" step="1" />
+              </div>
+              <div class="pad-cell">
+                <span>Lớp (z)</span>
+                <input type="number" id="el-z" value="2" min="0" max="99" step="1" />
+              </div>
+            </div>
+            <p class="hint" id="pos-hint">
+              Chỉ áp dụng cho chữ / ảnh con. Để <b>0</b> nghĩa là tự động (chữ co theo
+              nội dung, ảnh giữ đúng tỉ lệ gốc). Hoặc kéo ô vuông cam ở góc dưới–phải
+              của thành phần để chỉnh trực tiếp.
+            </p>
+          </div>
+        </div>
+
+        <!-- ---------- TAB: PREVIEW ---------- -->
+        <div class="settings-grid tab-panel" id="panel-preview" role="tabpanel">
+          <!-- 1. Mức thu phóng -->
+          <div class="form-group">
+            <label for="zoom-mode">Thu phóng:</label>
+            <select id="zoom-mode">
+              <option value="auto" selected>Tự động vừa khung</option>
+              <option value="manual">Tùy chỉnh</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="zoom-level">
+              Mức zoom:
+              <span class="value-badge" id="zoom-level-value">100%</span>
+            </label>
+            <input
+              type="range"
+              id="zoom-level"
+              min="25"
+              max="200"
+              step="5"
+              value="100"
+              disabled
+            />
+          </div>
+
+          <!-- 2. Lề trang A4 -->
+          <div class="form-group">
+            <label for="page-margin">Lề trang (mm):</label>
+            <input type="number" id="page-margin" value="20" min="0" max="50" />
+          </div>
+
+          <!-- 3. Khoảng cách giữa các item -->
+          <div class="form-group">
+            <label for="item-gap">Khoảng cách giữa item (mm):</label>
+            <input type="number" id="item-gap" value="5" min="0" max="30" />
+          </div>
+
+          <!-- 4. Đường guide -->
+          <div class="form-group full">
+            <label>Hiển thị:</label>
+            <div class="check-row">
+              <label class="check">
+                <input type="checkbox" id="show-border" checked />
+                Viền khung (nét đứt)
+              </label>
+              <label class="check">
+                <input type="checkbox" id="show-caption" checked />
+                Nhãn kích thước
+              </label>
+            </div>
+            <p class="hint">
+              Đây là đường guide hỗ trợ căn chỉnh, không phải nội dung in.
+            </p>
+          </div>
+
+          <!-- 5. Màu nền vùng preview -->
+          <div class="form-group">
+            <label for="stage-color">Màu nền vùng xem trước:</label>
+            <div class="color-row">
+              <input type="color" id="stage-color" value="#525659" />
+              <div class="swatches" id="stage-swatches">
+                <span
+                  class="swatch active"
+                  data-color="#525659"
+                  style="background: #525659"
+                ></span>
+                <span
+                  class="swatch"
+                  data-color="#1e1e1e"
+                  style="background: #1e1e1e"
+                ></span>
+                <span
+                  class="swatch"
+                  data-color="#8a8f98"
+                  style="background: #8a8f98"
+                ></span>
+                <span
+                  class="swatch"
+                  data-color="#eef1f5"
+                  style="background: #eef1f5"
+                ></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ============ BÊN TRÁI (2/3): Khổ A4 Xem trước ============ -->
+      <main class="preview-section">
+        <div class="preview-toolbar">
+          <span>Xem trước A4 · 210 × 297 mm</span>
+          <span id="zoom-label">100%</span>
+        </div>
+
+        <div class="a4-viewport" id="a4-viewport">
+          <div class="a4-scaler" id="a4-scaler">
+            <div id="a4-paper" class="a4-page">
+              <!-- Vùng chứa các item: xếp từ trên xuống, trái sang phải -->
+              <div id="items-area" class="items-area"></div>
+              <p class="empty-note hidden" id="empty-note">
+                Chưa có item nào — bấm "+ Thêm mới" ở panel bên phải.
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      /* =========================================================
+         DỮ LIỆU: mỗi item là một khung text độc lập trên trang A4.
+         Setting ở panel áp cho item đang được chọn.
+         ========================================================= */
+      const DEFAULT_ITEM = {
+        text: "Nội dung mới ✨",
+        fontFamily: "'DynaPuff', 'iOSEmojiCustom', cursive",
+        fontSize: 10,
+        bold: false,
+        italic: false,
+        underline: false,
+        color: "#111111",
+        lineHeight: 1.5,
+        w: 4, // rộng (cm) - 0 nghĩa là không khung
+        h: 3, // cao (cm)
+        padTop: 2, // padding trong khung, đơn vị mm
+        padRight: 2,
+        padBottom: 2,
+        padLeft: 2,
+        showPad: true, // tô màu vùng padding (guide, theo từng item)
+        elements: [], // chữ / ảnh con đặt tự do trong item
+      };
+
+      let items = [];
+      let selectedId = null; // item đang chọn
+      let selectedElId = null; // thành phần con đang chọn (null = text chính)
+      let nextId = 1;
+      let nextElId = 1;
+      let currentScale = 1; // hệ số zoom hiện tại của trang A4
+      const PX_PER_MM = 96 / 25.4;
+
+      // ---------- DOM ----------
+      const paper = document.getElementById("a4-paper");
+      const itemsArea = document.getElementById("items-area");
+      const emptyNote = document.getElementById("empty-note");
+      const textContent = document.getElementById("text-content");
+      const fontFamilySelect = document.getElementById("font-family");
+      const fontSizeInput = document.getElementById("font-size");
+      const btnBold = document.getElementById("btn-bold");
+      const btnItalic = document.getElementById("btn-italic");
+      const btnUnderline = document.getElementById("btn-underline");
+      const textColorInput = document.getElementById("text-color");
+      const colorSwatches = document.getElementById("color-swatches");
+      const lineHeightInput = document.getElementById("line-height");
+      const lineHeightValue = document.getElementById("line-height-value");
+      const frameSizes = document.getElementById("frame-sizes");
+      const panelText = document.getElementById("panel-text");
+      const btnAdd = document.getElementById("btn-add");
+      const btnCopy = document.getElementById("btn-copy");
+      const btnDelete = document.getElementById("btn-delete");
+      const btnMoveLeft = document.getElementById("btn-move-left");
+      const btnMoveRight = document.getElementById("btn-move-right");
+      const padLock = document.getElementById("pad-lock");
+      const showPadding = document.getElementById("show-padding");
+      const btnAddText = document.getElementById("btn-add-text");
+      const btnAddImage = document.getElementById("btn-add-image");
+      const btnDelEl = document.getElementById("btn-del-el");
+      const imageInput = document.getElementById("image-input");
+      const elChips = document.getElementById("el-chips");
+      const groupPos = document.getElementById("group-pos");
+      const elX = document.getElementById("el-x");
+      const elY = document.getElementById("el-y");
+      const elW = document.getElementById("el-w");
+      const elH = document.getElementById("el-h");
+      const elRotate = document.getElementById("el-rotate");
+      const elZ = document.getElementById("el-z");
+      const btnFront = document.getElementById("btn-front");
+      const btnBack = document.getElementById("btn-back");
+      const padInputs = {
+        padTop: document.getElementById("pad-top"),
+        padRight: document.getElementById("pad-right"),
+        padBottom: document.getElementById("pad-bottom"),
+        padLeft: document.getElementById("pad-left"),
+      };
+      const itemChips = document.getElementById("item-chips");
+      const itemStatus = document.getElementById("item-status");
+      const tabs = document.getElementById("tabs");
+      const previewSection = document.querySelector(".preview-section");
+      const zoomMode = document.getElementById("zoom-mode");
+      const zoomLevel = document.getElementById("zoom-level");
+      const zoomLevelValue = document.getElementById("zoom-level-value");
+      const pageMargin = document.getElementById("page-margin");
+      const itemGap = document.getElementById("item-gap");
+      const showBorder = document.getElementById("show-border");
+      const showCaption = document.getElementById("show-caption");
+      const stageColor = document.getElementById("stage-color");
+      const stageSwatches = document.getElementById("stage-swatches");
+      const viewport = document.getElementById("a4-viewport");
+      const scaler = document.getElementById("a4-scaler");
+      const zoomLabel = document.getElementById("zoom-label");
+
+      // ---------- HELPER ----------
+      const getSelected = () => items.find((it) => it.id === selectedId) || null;
+      const getEl = (id) => itemsArea.querySelector(`[data-id="${id}"]`);
+
+      // Thành phần con đang chọn trong item đang chọn
+      function getSelectedEl() {
+        const item = getSelected();
+        if (!item || selectedElId === null) return null;
+        return item.elements.find((el) => el.id === selectedElId) || null;
+      }
+
+      // Đối tượng mà các control chữ đang tác động: thành phần con, hoặc text chính
+      const getTarget = () => getSelectedEl() || getSelected();
+
+      function createItem(preset) {
+        const item = { ...DEFAULT_ITEM, ...preset, id: nextId++ };
+        // elements phải là mảng riêng, không dùng chung tham chiếu với DEFAULT_ITEM
+        item.elements = (preset?.elements || []).map((el) => ({
+          ...el,
+          id: nextElId++,
+        }));
+        return item;
+      }
+
+      // Dựng DOM cho 1 item
+      function buildItemEl(item) {
+        const el = document.createElement("div");
+        el.className = "frame-item";
+        el.dataset.id = item.id;
+        el.draggable = true;
+        el.innerHTML = `
+          <div class="item-tools">
+            <button type="button" class="copy" data-act="copy" title="Nhân bản">⧉</button>
+            <button type="button" class="del" data-act="del" title="Xóa">✕</button>
+          </div>
+          <div class="a4-text"><span class="a4-text-inner"></span></div>
+          <div class="frame-caption"></div>`;
+        applyItemStyles(el, item);
+        return el;
+      }
+
+      // Áp toàn bộ thuộc tính của item lên DOM (không dựng lại element)
+      function applyItemStyles(el, item) {
+        const box = el.querySelector(".a4-text");
+        const inner = el.querySelector(".a4-text-inner");
+        const caption = el.querySelector(".frame-caption");
+
+        inner.textContent = item.text || " ";
+        inner.style.textDecoration = item.underline ? "underline" : "none";
+
+        box.style.fontFamily = item.fontFamily;
+        box.style.fontSize = `${item.fontSize}px`;
+        box.style.fontWeight = item.bold ? "bold" : "normal";
+        box.style.fontStyle = item.italic ? "italic" : "normal";
+        box.style.color = item.color;
+        box.style.lineHeight = item.lineHeight;
+        box.style.padding = `${item.padTop}mm ${item.padRight}mm ${item.padBottom}mm ${item.padLeft}mm`;
+        box.classList.toggle("show-padding", !!item.showPad);
+        renderSubEls(box, item);
+
+        if (item.w && item.h) {
+          box.classList.add("framed");
+          box.style.setProperty("--frame-w", `${item.w}cm`);
+          box.style.setProperty("--frame-h", `${item.h}cm`);
+          caption.textContent = `Khung ${item.h} × ${item.w} cm`;
+          caption.classList.remove("hidden");
+        } else {
+          box.classList.remove("framed");
+          box.style.removeProperty("--frame-w");
+          box.style.removeProperty("--frame-h");
+          caption.classList.add("hidden");
+        }
+      }
+
+      // Vẽ lại các thành phần con (chữ / ảnh) bên trong 1 item
+      function renderSubEls(box, item) {
+        box.querySelectorAll(".sub-el").forEach((el) => el.remove());
+
+        item.elements.forEach((data) => {
+          const el = document.createElement("div");
+          el.className = `sub-el ${data.type === "image" ? "image-el" : "text-el"}`;
+          el.dataset.elId = data.id;
+          el.style.left = `${data.x}mm`;
+          el.style.top = `${data.y}mm`;
+          el.style.transform = data.rotate ? `rotate(${data.rotate}deg)` : "";
+          el.style.height = data.h ? `${data.h}mm` : "auto";
+          el.style.zIndex = data.z ?? 2;
+
+          if (data.type === "image") {
+            el.style.width = `${data.w}mm`;
+            el.classList.toggle("fixed-h", !!data.h);
+            const img = document.createElement("img");
+            img.src = data.src;
+            img.alt = "";
+            el.appendChild(img);
+          } else {
+            el.style.width = data.w ? `${data.w}mm` : "auto";
+            el.style.fontFamily = data.fontFamily;
+            el.style.fontSize = `${data.fontSize}px`;
+            el.style.fontWeight = data.bold ? "bold" : "normal";
+            el.style.fontStyle = data.italic ? "italic" : "normal";
+            el.style.textDecoration = data.underline ? "underline" : "none";
+            el.style.color = data.color;
+            el.style.lineHeight = data.lineHeight;
+            el.textContent = data.text || " ";
+          }
+
+          // Tay nắm resize - thêm sau cùng vì nhánh text dùng textContent (sẽ xoá con)
+          const handle = document.createElement("span");
+          handle.className = "resize-handle";
+          el.appendChild(handle);
+
+          el.classList.toggle(
+            "selected",
+            item.id === selectedId && data.id === selectedElId
+          );
+          box.appendChild(el);
+        });
+      }
+
+      // Dựng lại toàn bộ danh sách item
+      function renderItems() {
+        itemsArea.innerHTML = "";
+        items.forEach((item) => itemsArea.appendChild(buildItemEl(item)));
+        emptyNote.classList.toggle("hidden", items.length > 0);
+        renderSelection();
+        updateScale();
+      }
+
+      // Cập nhật viền chọn + chip + trạng thái nút
+      function renderSelection() {
+        itemsArea.querySelectorAll(".frame-item").forEach((el) => {
+          el.classList.toggle("selected", Number(el.dataset.id) === selectedId);
+        });
+
+        // Chỉ đổi class, KHÔNG dựng lại DOM - nếu không sẽ mất node đang kéo
+        itemsArea.querySelectorAll(".sub-el").forEach((el) => {
+          const inSelectedItem =
+            Number(el.closest(".frame-item").dataset.id) === selectedId;
+          el.classList.toggle(
+            "selected",
+            inSelectedItem && Number(el.dataset.elId) === selectedElId
+          );
+        });
+
+        itemChips.innerHTML = "";
+        items.forEach((item, i) => {
+          const chip = document.createElement("button");
+          chip.type = "button";
+          chip.className = "chip" + (item.id === selectedId ? " active" : "");
+          chip.dataset.id = item.id;
+          chip.textContent = i + 1;
+          itemChips.appendChild(chip);
+        });
+
+        const selected = getSelected();
+        const index = items.findIndex((it) => it.id === selectedId);
+        const subEl = getSelectedEl();
+        itemStatus.textContent = items.length
+          ? selected
+            ? `Đang sửa item ${index + 1} / ${items.length}` +
+              (subEl
+                ? ` → ${subEl.type === "image" ? "ảnh" : "chữ"} con`
+                : " → text chính")
+            : `Chưa chọn item nào (${items.length} item trên trang)`
+          : "Trang đang trống";
+
+        panelText.classList.toggle("locked", !selected);
+        panelText.classList.toggle("img-mode", subEl?.type === "image");
+        btnCopy.disabled = !selected;
+        btnDelete.disabled = !selected;
+        btnMoveLeft.disabled = !selected || index <= 0;
+        btnMoveRight.disabled = !selected || index === items.length - 1;
+        btnAddText.disabled = !selected;
+        btnAddImage.disabled = !selected;
+        btnDelEl.disabled = !subEl;
+        btnFront.disabled = !subEl;
+        btnBack.disabled = !subEl;
+        groupPos.classList.toggle("dimmed", !subEl);
+
+        renderElChips(selected);
+        if (selected) syncControls(getTarget(), selected);
+      }
+
+      // Chip chọn nhanh thành phần con trong item
+      function renderElChips(item) {
+        elChips.innerHTML = "";
+        if (!item) return;
+
+        const makeChip = (label, elId) => {
+          const chip = document.createElement("button");
+          chip.type = "button";
+          chip.className = "chip" + (selectedElId === elId ? " active" : "");
+          chip.dataset.elId = elId === null ? "" : elId;
+          chip.textContent = label;
+          elChips.appendChild(chip);
+        };
+
+        makeChip("Text chính", null);
+        item.elements.forEach((el, i) =>
+          makeChip(`${el.type === "image" ? "Ảnh" : "Chữ"} ${i + 1}`, el.id)
+        );
+      }
+
+      // Đổ giá trị ngược lại các control.
+      // target = thứ đang sửa (text chính hoặc thành phần con), item = item đang chọn.
+      function syncControls(target, item) {
+        if (target.type !== "image") {
+          textContent.value = target.text ?? "";
+          fontFamilySelect.value = target.fontFamily;
+          fontSizeInput.value = target.fontSize;
+          btnBold.classList.toggle("active", !!target.bold);
+          btnItalic.classList.toggle("active", !!target.italic);
+          btnUnderline.classList.toggle("active", !!target.underline);
+          textColorInput.value = target.color;
+          colorSwatches.querySelectorAll(".swatch").forEach((s) => {
+            s.classList.toggle("active", s.dataset.color === target.color);
+          });
+          lineHeightInput.value = target.lineHeight;
+          lineHeightValue.textContent = Number(target.lineHeight).toFixed(1);
+        }
+
+        // Vị trí / kích thước chỉ có ý nghĩa với thành phần con
+        const subEl = getSelectedEl();
+        if (subEl) {
+          elX.value = subEl.x;
+          elY.value = subEl.y;
+          elW.value = subEl.w || 0;
+          elH.value = subEl.h || 0;
+          elRotate.value = subEl.rotate || 0;
+          elZ.value = subEl.z ?? 2;
+        }
+
+        // Các control cấp item
+        frameSizes.querySelectorAll(".btn-size").forEach((b) => {
+          b.classList.toggle(
+            "active",
+            Number(b.dataset.w) === item.w && Number(b.dataset.h) === item.h
+          );
+        });
+        Object.keys(padInputs).forEach((key) => {
+          padInputs[key].value = item[key];
+        });
+        showPadding.checked = !!item.showPad;
+      }
+
+      // Sửa item đang chọn rồi vẽ lại đúng item đó
+      function updateSelected(patch) {
+        const item = getSelected();
+        if (!item) return;
+        Object.assign(item, patch);
+        const el = getEl(item.id);
+        if (el) applyItemStyles(el, item);
+        updateScale();
+      }
+
+      // Sửa thứ đang được chọn: thành phần con nếu có, không thì text chính của item
+      function updateTarget(patch) {
+        const subEl = getSelectedEl();
+        if (!subEl) return updateSelected(patch);
+        Object.assign(subEl, patch);
+        const item = getSelected();
+        const el = getEl(item.id);
+        if (el) applyItemStyles(el, item);
+        updateScale();
+      }
+
+      function selectItem(id, elId = null) {
+        selectedId = id;
+        selectedElId = elId;
+        renderSelection();
+      }
+
+      // ---------- THÊM / NHÂN BẢN / XÓA ----------
+      btnAdd.addEventListener("click", () => {
+        const item = createItem();
+        items.push(item);
+        selectedId = item.id;
+        selectedElId = null;
+        renderItems();
+      });
+
+      function copyItem(id) {
+        const source = items.find((it) => it.id === id);
+        if (!source) return;
+        const clone = createItem({ ...source });
+        items.splice(items.indexOf(source) + 1, 0, clone);
+        selectedId = clone.id;
+        selectedElId = null;
+        renderItems();
+      }
+
+      function deleteItem(id) {
+        const index = items.findIndex((it) => it.id === id);
+        if (index === -1) return;
+        items.splice(index, 1);
+        if (selectedId === id) {
+          const next = items[index] || items[index - 1];
+          selectedId = next ? next.id : null;
+          selectedElId = null;
+        }
+        renderItems();
+      }
+
+      btnCopy.addEventListener("click", () => copyItem(selectedId));
+      btnDelete.addEventListener("click", () => deleteItem(selectedId));
+
+      // Chọn item bằng chip
+      itemChips.addEventListener("click", (e) => {
+        const chip = e.target.closest(".chip");
+        if (chip) selectItem(Number(chip.dataset.id));
+      });
+
+      // Click trực tiếp trên preview: chọn item, hoặc bấm nút nhân bản / xóa
+      itemsArea.addEventListener("click", (e) => {
+        const el = e.target.closest(".frame-item");
+        if (!el) return;
+        const id = Number(el.dataset.id);
+        const action = e.target.closest("[data-act]");
+
+        if (action?.dataset.act === "copy") return copyItem(id);
+        if (action?.dataset.act === "del") return deleteItem(id);
+        // Click vào thành phần con đã được pointerdown xử lý, không reset selection
+        if (e.target.closest(".sub-el")) return;
+        selectItem(id);
+      });
+
+      // ---------- TAB ----------
+      tabs.addEventListener("click", (e) => {
+        const tab = e.target.closest(".tab");
+        if (!tab) return;
+        tabs
+          .querySelectorAll(".tab")
+          .forEach((t) => t.classList.toggle("active", t === tab));
+        document.querySelectorAll(".tab-panel").forEach((p) => {
+          p.classList.toggle("active", p.id === `panel-${tab.dataset.tab}`);
+        });
+      });
+
+      // ---------- TAB VĂN BẢN: áp cho item đang chọn ----------
+      textContent.addEventListener("input", (e) =>
+        updateTarget({ text: e.target.value })
+      );
+
+      fontFamilySelect.addEventListener("change", (e) =>
+        updateTarget({ fontFamily: e.target.value })
+      );
+
+      fontSizeInput.addEventListener("input", (e) =>
+        updateTarget({ fontSize: Number(e.target.value) || 10 })
+      );
+
+      btnBold.addEventListener("click", () => {
+        if (!getSelected()) return;
+        btnBold.classList.toggle("active");
+        updateTarget({ bold: btnBold.classList.contains("active") });
+      });
+
+      btnItalic.addEventListener("click", () => {
+        if (!getSelected()) return;
+        btnItalic.classList.toggle("active");
+        updateTarget({ italic: btnItalic.classList.contains("active") });
+      });
+
+      btnUnderline.addEventListener("click", () => {
+        if (!getSelected()) return;
+        btnUnderline.classList.toggle("active");
+        updateTarget({ underline: btnUnderline.classList.contains("active") });
+      });
+
+      function applyColor(color) {
+        textColorInput.value = color;
+        colorSwatches.querySelectorAll(".swatch").forEach((s) => {
+          s.classList.toggle("active", s.dataset.color === color);
+        });
+        updateTarget({ color });
+      }
+
+      textColorInput.addEventListener("input", (e) => applyColor(e.target.value));
+
+      colorSwatches.addEventListener("click", (e) => {
+        const swatch = e.target.closest(".swatch");
+        if (swatch) applyColor(swatch.dataset.color);
+      });
+
+      lineHeightInput.addEventListener("input", (e) => {
+        lineHeightValue.textContent = Number(e.target.value).toFixed(1);
+        updateTarget({ lineHeight: Number(e.target.value) });
+      });
+
+      frameSizes.addEventListener("click", (e) => {
+        const btn = e.target.closest(".btn-size");
+        if (!btn || !getSelected()) return;
+        frameSizes
+          .querySelectorAll(".btn-size")
+          .forEach((b) => b.classList.toggle("active", b === btn));
+        updateSelected({
+          w: Number(btn.dataset.w),
+          h: Number(btn.dataset.h),
+        });
+      });
+
+      // ---------- THÀNH PHẦN CON: THÊM / XÓA / CHỌN ----------
+      function addElement(data) {
+        const item = getSelected();
+        if (!item) return;
+        // z mặc định = cao hơn mọi thành phần đang có -> cái thêm sau nằm trên cùng
+        const topZ = item.elements.reduce((max, el) => Math.max(max, el.z ?? 2), 1);
+        const el = { id: nextElId++, x: 2, y: 2, rotate: 0, z: topZ + 1, ...data };
+        item.elements.push(el);
+        selectedElId = el.id;
+        const node = getEl(item.id);
+        if (node) applyItemStyles(node, item);
+        renderSelection();
+        updateScale();
+      }
+
+      btnAddText.addEventListener("click", () => {
+        const item = getSelected();
+        if (!item) return;
+        // Kế thừa typography của text chính cho tiện
+        addElement({
+          type: "text",
+          text: "Chữ mới",
+          w: 0, // 0 = tự co theo nội dung
+          fontFamily: item.fontFamily,
+          fontSize: item.fontSize,
+          bold: item.bold,
+          italic: item.italic,
+          underline: item.underline,
+          color: item.color,
+          lineHeight: item.lineHeight,
+        });
+      });
+
+      btnAddImage.addEventListener("click", () => {
+        if (getSelected()) imageInput.click();
+      });
+
+      imageInput.addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => addElement({ type: "image", src: reader.result, w: 20 });
+        reader.readAsDataURL(file);
+        e.target.value = ""; // cho phép chọn lại đúng file đó lần sau
+      });
+
+      btnDelEl.addEventListener("click", () => {
+        const item = getSelected();
+        const subEl = getSelectedEl();
+        if (!item || !subEl) return;
+        item.elements.splice(item.elements.indexOf(subEl), 1);
+        selectedElId = null;
+        const node = getEl(item.id);
+        if (node) applyItemStyles(node, item);
+        renderSelection();
+      });
+
+      elChips.addEventListener("click", (e) => {
+        const chip = e.target.closest(".chip");
+        if (!chip) return;
+        selectedElId = chip.dataset.elId ? Number(chip.dataset.elId) : null;
+        const item = getSelected();
+        if (item) applyItemStyles(getEl(item.id), item);
+        renderSelection();
+      });
+
+      // Nhập vị trí / kích thước bằng số
+      elX.addEventListener("input", () => updateTarget({ x: Number(elX.value) || 0 }));
+      elY.addEventListener("input", () => updateTarget({ y: Number(elY.value) || 0 }));
+      elW.addEventListener("input", () =>
+        updateTarget({ w: Number(elW.value) || 0 })
+      );
+      elH.addEventListener("input", () =>
+        updateTarget({ h: Number(elH.value) || 0 })
+      );
+      elRotate.addEventListener("input", () =>
+        updateTarget({ rotate: Number(elRotate.value) || 0 })
+      );
+      elZ.addEventListener("input", () =>
+        updateTarget({ z: Number(elZ.value) || 0 })
+      );
+
+      // Đưa lên trên cùng / xuống dưới cùng so với các thành phần khác trong item
+      function restack(toFront) {
+        const item = getSelected();
+        const subEl = getSelectedEl();
+        if (!item || !subEl) return;
+        const zs = item.elements.map((el) => el.z ?? 2);
+        subEl.z = toFront
+          ? Math.max(...zs) + 1
+          : Math.max(0, Math.min(...zs) - 1);
+        elZ.value = subEl.z;
+        applyItemStyles(getEl(item.id), item);
+      }
+
+      btnFront.addEventListener("click", () => restack(true));
+      btnBack.addEventListener("click", () => restack(false));
+
+      // ---------- KÉO THÀNH PHẦN CON TRONG PHẠM VI ITEM ----------
+      itemsArea.addEventListener("pointerdown", (e) => {
+        const node = e.target.closest(".sub-el");
+        if (!node) return;
+
+        const frame = node.closest(".frame-item");
+        const box = node.closest(".a4-text");
+        const itemId = Number(frame.dataset.id);
+        const item = items.find((it) => it.id === itemId);
+        const data = item?.elements.find((el) => el.id === Number(node.dataset.elId));
+        if (!data) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        selectItem(itemId, data.id);
+
+        // Tắt HTML5 drag của item để không xung đột với thao tác kéo này
+        frame.draggable = false;
+        node.classList.add("dragging-el");
+        node.setPointerCapture(e.pointerId);
+
+        const startX = e.clientX;
+        const startY = e.clientY;
+
+        // ----- Kéo tay nắm ở góc: đổi kích thước -----
+        if (e.target.closest(".resize-handle")) {
+          const startW = data.w || node.offsetWidth / PX_PER_MM;
+          const startH = data.h || node.offsetHeight / PX_PER_MM;
+          // Ảnh chưa đặt chiều cao thì giữ tỉ lệ gốc (height: auto)
+          const keepRatio = data.type === "image" && !data.h;
+
+          const onResize = (ev) => {
+            const dx = (ev.clientX - startX) / currentScale / PX_PER_MM;
+            const dy = (ev.clientY - startY) / currentScale / PX_PER_MM;
+            const maxW = box.clientWidth / PX_PER_MM - data.x;
+            const maxH = box.clientHeight / PX_PER_MM - data.y;
+
+            data.w = Math.round(Math.min(Math.max(startW + dx, 3), maxW) * 10) / 10;
+            node.style.width = `${data.w}mm`;
+
+            if (keepRatio) {
+              data.h = 0; // height: auto -> tỉ lệ gốc tự giữ
+            } else {
+              data.h = Math.round(Math.min(Math.max(startH + dy, 3), maxH) * 10) / 10;
+              node.style.height = `${data.h}mm`;
+              node.classList.toggle("fixed-h", data.type === "image");
+            }
+            elW.value = data.w;
+            elH.value = data.h;
+          };
+
+          const onResizeUp = () => {
+            node.classList.remove("dragging-el");
+            frame.draggable = true;
+            node.removeEventListener("pointermove", onResize);
+            node.removeEventListener("pointerup", onResizeUp);
+          };
+
+          node.addEventListener("pointermove", onResize);
+          node.addEventListener("pointerup", onResizeUp);
+          return;
+        }
+
+        // ----- Kéo thân: đổi vị trí -----
+        const originX = data.x;
+        const originY = data.y;
+
+        // Giới hạn: thành phần không ra khỏi lòng khung (padding box)
+        const maxX = (box.clientWidth - node.offsetWidth) / PX_PER_MM;
+        const maxY = (box.clientHeight - node.offsetHeight) / PX_PER_MM;
+        const clamp = (v, max) => Math.max(0, Math.min(v, Math.max(0, max)));
+
+        const onMove = (ev) => {
+          // chia cho currentScale vì trang A4 đang bị transform: scale()
+          const dx = (ev.clientX - startX) / currentScale / PX_PER_MM;
+          const dy = (ev.clientY - startY) / currentScale / PX_PER_MM;
+          data.x = Math.round(clamp(originX + dx, maxX) * 10) / 10;
+          data.y = Math.round(clamp(originY + dy, maxY) * 10) / 10;
+          node.style.left = `${data.x}mm`;
+          node.style.top = `${data.y}mm`;
+        };
+
+        const onUp = () => {
+          node.classList.remove("dragging-el");
+          frame.draggable = true;
+          node.removeEventListener("pointermove", onMove);
+          node.removeEventListener("pointerup", onUp);
+          elX.value = data.x;
+          elY.value = data.y;
+        };
+
+        node.addEventListener("pointermove", onMove);
+        node.addEventListener("pointerup", onUp);
+      });
+
+      // Padding từng góc (mm). Bật "Đều 4 góc" thì sửa 1 ô là đồng bộ cả 4.
+      Object.entries(padInputs).forEach(([key, input]) => {
+        input.addEventListener("input", () => {
+          const value = Number(input.value) || 0;
+          if (padLock.checked) {
+            const all = {
+              padTop: value,
+              padRight: value,
+              padBottom: value,
+              padLeft: value,
+            };
+            Object.values(padInputs).forEach((i) => (i.value = value));
+            updateSelected(all);
+          } else {
+            updateSelected({ [key]: value });
+          }
+        });
+      });
+
+      // Bật/tắt tô màu vùng padding - theo từng item (guide, không phải nội dung in)
+      showPadding.addEventListener("change", () => {
+        updateSelected({ showPad: showPadding.checked });
+      });
+
+      // Bật lại khoá thì kéo cả 4 góc về giá trị của ô "Trên"
+      padLock.addEventListener("change", () => {
+        if (!padLock.checked || !getSelected()) return;
+        padInputs.padTop.dispatchEvent(new Event("input"));
+      });
+
+      // ---------- SORT: nút đổi vị trí ----------
+      function moveSelected(delta) {
+        const index = items.findIndex((it) => it.id === selectedId);
+        const target = index + delta;
+        if (index === -1 || target < 0 || target >= items.length) return;
+        const [item] = items.splice(index, 1);
+        items.splice(target, 0, item);
+        renderItems();
+      }
+
+      btnMoveLeft.addEventListener("click", () => moveSelected(-1));
+      btnMoveRight.addEventListener("click", () => moveSelected(1));
+
+      // ---------- SORT: kéo thả trên trang A4 ----------
+      let dragId = null;
+
+      function clearDropMarks() {
+        itemsArea.querySelectorAll(".frame-item").forEach((el) => {
+          el.classList.remove("drop-before", "drop-after");
+        });
+      }
+
+      itemsArea.addEventListener("dragstart", (e) => {
+        // Bấm vào nút nhân bản / xóa thì không kéo
+        if (e.target.closest("[data-act]")) return e.preventDefault();
+        const el = e.target.closest(".frame-item");
+        if (!el) return;
+        dragId = Number(el.dataset.id);
+        el.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", String(dragId)); // Firefox cần dòng này
+      });
+
+      itemsArea.addEventListener("dragover", (e) => {
+        if (dragId === null) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+
+        const el = e.target.closest(".frame-item");
+        clearDropMarks();
+        if (!el || Number(el.dataset.id) === dragId) return;
+
+        // Chia đôi theo chiều ngang: thả trước hay sau item đang hover
+        const rect = el.getBoundingClientRect();
+        const after = e.clientX > rect.left + rect.width / 2;
+        el.classList.add(after ? "drop-after" : "drop-before");
+      });
+
+      itemsArea.addEventListener("drop", (e) => {
+        if (dragId === null) return;
+        e.preventDefault();
+
+        const el = e.target.closest(".frame-item");
+        const from = items.findIndex((it) => it.id === dragId);
+        if (!el || from === -1) return clearDropMarks();
+
+        const targetId = Number(el.dataset.id);
+        if (targetId === dragId) return clearDropMarks();
+
+        const rect = el.getBoundingClientRect();
+        const after = e.clientX > rect.left + rect.width / 2;
+
+        const [item] = items.splice(from, 1);
+        let to = items.findIndex((it) => it.id === targetId);
+        if (after) to += 1;
+        items.splice(to, 0, item);
+
+        selectedId = item.id;
+        renderItems();
+      });
+
+      itemsArea.addEventListener("dragend", () => {
+        dragId = null;
+        clearDropMarks();
+        itemsArea.querySelectorAll(".dragging").forEach((el) =>
+          el.classList.remove("dragging")
+        );
+      });
+
+      // ---------- TAB PREVIEW (áp cho cả trang) ----------
+      zoomMode.addEventListener("change", () => {
+        zoomLevel.disabled = zoomMode.value === "auto";
+        updateScale();
+      });
+
+      zoomLevel.addEventListener("input", () => {
+        zoomLevelValue.textContent = `${zoomLevel.value}%`;
+        if (zoomMode.value === "manual") updateScale();
+      });
+
+      pageMargin.addEventListener("input", () => {
+        paper.style.padding = `${pageMargin.value || 0}mm`;
+      });
+
+      itemGap.addEventListener("input", () => {
+        itemsArea.style.gap = `${itemGap.value || 0}mm`;
+      });
+
+      showBorder.addEventListener("change", () => {
+        itemsArea.classList.toggle("hide-border", !showBorder.checked);
+      });
+
+      showCaption.addEventListener("change", () => {
+        itemsArea.classList.toggle("hide-caption", !showCaption.checked);
+        updateScale();
+      });
+
+      function applyStageColor(color) {
+        previewSection.style.backgroundColor = color;
+        stageColor.value = color;
+        stageSwatches.querySelectorAll(".swatch").forEach((s) => {
+          s.classList.toggle("active", s.dataset.color === color);
+        });
+      }
+
+      stageColor.addEventListener("input", (e) => applyStageColor(e.target.value));
+
+      stageSwatches.addEventListener("click", (e) => {
+        const swatch = e.target.closest(".swatch");
+        if (swatch) applyStageColor(swatch.dataset.color);
+      });
+
+      // ---------- THU PHÓNG TRANG A4 ----------
+      function updateScale() {
+        const available = viewport.parentElement.clientWidth - 32;
+        const pageWidth = paper.offsetWidth;
+        const pageHeight = paper.offsetHeight;
+        if (!pageWidth) return;
+
+        const scale =
+          zoomMode.value === "manual"
+            ? Number(zoomLevel.value) / 100
+            : Math.min(1, available / pageWidth);
+        currentScale = scale; // dùng khi kéo thành phần con
+        scaler.style.transform = `scale(${scale})`;
+        viewport.style.width = `${pageWidth * scale}px`;
+        viewport.style.height = `${pageHeight * scale}px`;
+
+        const percent = Math.round(scale * 100);
+        zoomLabel.textContent = `${percent}%`;
+
+        // Ở chế độ tự động thì slider phản ánh lại mức zoom thực tế
+        if (zoomMode.value === "auto") {
+          zoomLevel.value = Math.min(200, Math.max(25, percent));
+          zoomLevelValue.textContent = `${percent}%`;
+        }
+      }
+
+      // ---------- KHỞI TẠO: 1 item mặc định khung 3 × 4 ----------
+      const first = createItem({
+        text: "Gõ nội dung vào ô bên phải để xem kết quả live trên tờ A4... 🚀🔥✨",
+      });
+      items.push(first);
+      selectedId = first.id;
+      renderItems();
+
+      new ResizeObserver(updateScale).observe(paper);
+      window.addEventListener("resize", updateScale);
+      window.addEventListener("load", updateScale);
+    </script>
+  </body>
+</html>

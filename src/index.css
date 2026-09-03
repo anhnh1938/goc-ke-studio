@@ -1,0 +1,531 @@
+/* Font Emoji local, phục vụ từ thư mục public/ */
+@font-face {
+  font-family: 'iOSEmojiCustom';
+  src: url('/fonts/NotoColorEmoji.ttf') format('truetype');
+  font-display: swap;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #eef1f5;
+  color: #333;
+  overflow: hidden;
+}
+
+/* Layout chính: TRÁI 2/3 (preview A4) - PHẢI 1/3 (settings) */
+.app-layout {
+  display: grid;
+  grid-template-columns: 2fr minmax(360px, 1fr);
+  grid-template-rows: 100vh;
+  height: 100vh;
+}
+
+/* ================= BÊN PHẢI: Bảng điều khiển Settings ================= */
+.settings-section {
+  grid-column: 2;
+  grid-row: 1;
+  background: #ffffff;
+  border-left: 1px solid #ddd;
+  padding: 20px 24px 40px;
+  overflow-y: auto;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.settings-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: #111;
+}
+
+/* Lưới 2 cột cho các nhóm setting ngắn */
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0 24px;
+  align-content: start;
+}
+
+/* Khoá panel khi không có item nào được chọn */
+.settings-grid.locked > .form-group:not(.always-on) {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* Đang chọn ảnh -> các control chữ vô nghĩa; chưa chọn thành phần con ->
+   nhóm vị trí vô nghĩa */
+.settings-grid.img-mode > .form-group.typo,
+.form-group.dimmed {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.form-group {
+  margin-bottom: 18px;
+  /* mặc định grid item là min-width: auto -> nội dung rộng sẽ đẩy tràn cả panel */
+  min-width: 0;
+}
+
+.form-group.full {
+  grid-column: 1 / -1;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #444;
+}
+
+.form-label .value-badge {
+  float: right;
+  font-weight: 600;
+  color: #007aff;
+  font-variant-numeric: tabular-nums;
+}
+
+.hint {
+  font-size: 12px;
+  color: #888;
+  margin: 6px 0 0;
+}
+
+/* Lưới nhập padding 4 góc / vị trí thành phần con */
+.pad-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #444;
+  margin-bottom: 6px;
+}
+
+.pad-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+/* Ô màu mẫu đứng cạnh nhãn "Hiện màu" */
+.pad-legend {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: rgba(46, 160, 67, 0.35);
+  border: 1px solid rgba(46, 160, 67, 0.55);
+  vertical-align: -1px;
+  margin-right: 4px;
+}
+
+/* 4 cột khi đủ chỗ, tự rớt xuống 2 cột khi panel hẹp */
+.pad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+  gap: 8px;
+}
+
+.pad-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pad-cell > span {
+  font-size: 11px;
+  font-weight: 600;
+  color: #7a828d;
+  text-align: center;
+}
+
+/* InputNumber của antd có width mặc định 90px -> phải ép về 100% của ô lưới */
+.pad-cell .ant-input-number {
+  width: 100%;
+  min-width: 0;
+}
+
+.pad-cell .ant-input-number-input {
+  text-align: center;
+  padding-inline: 4px;
+}
+
+/* Danh sách item / thành phần để chọn nhanh */
+.item-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+/* Chọn màu chữ */
+.color-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.swatches {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.swatch {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #ccc;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.swatch:hover {
+  transform: scale(1.15);
+}
+
+.swatch.active {
+  box-shadow: 0 0 0 2px #007aff;
+}
+
+/* ================= BÊN TRÁI: Vùng Preview khổ giấy A4 ================= */
+.preview-section {
+  grid-column: 1;
+  grid-row: 1;
+  background-color: #525659;
+  padding: 24px 16px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  /* safe: khi zoom lớn hơn khung thì không bị cắt mất mép trái */
+  align-items: safe center;
+  gap: 12px;
+}
+
+.preview-toolbar {
+  color: #d7dade;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Khung giữ chỗ đúng bằng kích thước trang sau khi thu nhỏ.
+   flex-shrink: 0 là bắt buộc: preview-section là flex column cao 100vh,
+   nếu không khóa lại thì trang A4 bị bóp dẹp theo chiều cao. */
+.a4-viewport {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.a4-scaler {
+  transform-origin: top left;
+}
+
+/* Mô phỏng chính xác tỉ lệ khổ giấy A4 (210mm x 297mm) */
+.a4-page {
+  width: 210mm;
+  min-height: 297mm;
+  background: white;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Các item xếp từ góc trên trái, tự xuống hàng khi hết bề ngang trang */
+.items-area {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  align-content: flex-start;
+  justify-content: flex-start;
+}
+
+.frame-item {
+  position: relative;
+  flex: 0 0 auto;
+  max-width: 100%;
+  cursor: grab;
+}
+
+.frame-item:active {
+  cursor: grabbing;
+}
+
+.frame-item.dragging {
+  opacity: 0.4;
+}
+
+/* Vạch xanh báo vị trí sẽ thả vào */
+.frame-item.drop-before::before,
+.frame-item.drop-after::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 2px;
+  background: #007aff;
+  z-index: 3;
+}
+
+.frame-item.drop-before::before {
+  left: -5px;
+}
+
+.frame-item.drop-after::after {
+  right: -5px;
+}
+
+.a4-text {
+  position: relative; /* mốc toạ độ cho các thành phần con */
+  word-break: break-word;
+  white-space: pre-wrap;
+  font-family: 'DynaPuff', 'iOSEmojiCustom', cursive;
+  font-size: 10px;
+  line-height: 1.5;
+  color: #111111;
+}
+
+/* Khung kích thước thật (3x4, 3x5, 2x6 cm): text nằm bên trong khung */
+.a4-text.framed {
+  width: var(--frame-w);
+  height: var(--frame-h);
+  border: 1px dashed #9aa3af;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* min-width: 0 để chữ dài vẫn xuống dòng được bên trong khung flex */
+.a4-text.framed > .a4-text-inner {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Text chính nằm ở lớp 1: thành phần con đặt z = 0 sẽ chui xuống dưới nó,
+   z >= 2 thì nổi lên trên. */
+.a4-text-inner {
+  position: relative;
+  z-index: 1;
+}
+
+/* Item đang được chọn */
+.frame-item.selected .a4-text {
+  outline: 2px solid #007aff;
+  outline-offset: 2px;
+}
+
+/* Thành phần con (chữ / ảnh) đặt tự do trong item */
+.sub-el {
+  position: absolute;
+  cursor: move;
+  touch-action: none;
+  user-select: none;
+  max-width: 100%;
+}
+
+.sub-el.text-el {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.sub-el.image-el img {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+
+/* Khi đặt chiều cao cố định thì ảnh co vừa khung, không méo */
+.sub-el.image-el.fixed-h img {
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Tay nắm kéo đổi kích thước, chỉ hiện khi thành phần được chọn */
+.resize-handle {
+  position: absolute;
+  /* nằm trong lòng thành phần để không bị overflow:hidden của khung cắt mất */
+  right: 0;
+  bottom: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: #ff9500;
+  border: 1px solid #fff;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+  cursor: nwse-resize;
+  display: none;
+  z-index: 2; /* luôn nổi trên nội dung của chính thành phần đó */
+}
+
+.sub-el.selected .resize-handle {
+  display: block;
+}
+
+.sub-el.selected {
+  outline: 1.5px solid #ff9500;
+  outline-offset: 1px;
+}
+
+.sub-el.dragging-el {
+  opacity: 0.75;
+}
+
+/* Nhãn nhỏ ghi kích thước khung, không nằm trong vùng in.
+   Nhãn là phần tử anh em của .a4-text nên không thừa kế style của item.
+   Set cứng line-height/weight để hình học của nhãn luôn cố định. */
+.frame-caption {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  line-height: 1.4;
+  font-weight: 500;
+  font-style: normal;
+  letter-spacing: 0;
+  color: #98a2b3;
+  text-align: left;
+  margin-top: 2mm;
+}
+
+/* Nút thao tác nổi trên từng item */
+.item-tools {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  display: none;
+  gap: 4px;
+  z-index: 2;
+}
+
+.frame-item:hover .item-tools,
+.frame-item.selected .item-tools {
+  display: flex;
+}
+
+.item-tools button {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid #ccd2da;
+  background: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  line-height: 1;
+  color: #5b636d;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.item-tools button:hover {
+  background: #007aff;
+  border-color: #007aff;
+  color: #fff;
+}
+
+.item-tools button.del:hover {
+  background: #c0392b;
+  border-color: #c0392b;
+}
+
+/* Tô màu vùng padding (kiểu DevTools).
+   2 lớp background: lớp trắng phủ đúng content-box, lớp xanh phủ padding-box
+   -> phần chênh lệch giữa 2 lớp chính là vùng padding. */
+.a4-text.show-padding {
+  background-image: linear-gradient(#ffffff, #ffffff),
+    linear-gradient(rgba(46, 160, 67, 0.35), rgba(46, 160, 67, 0.35));
+  background-origin: content-box, padding-box;
+  background-clip: content-box, padding-box;
+  background-repeat: no-repeat;
+}
+
+/* Bật/tắt các đường guide từ tab Preview */
+.items-area.hide-border .a4-text.framed {
+  border-color: transparent;
+}
+
+.items-area.hide-caption .frame-caption {
+  display: none;
+}
+
+/* Trang trống */
+.empty-note {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: #b6bcc4;
+}
+
+/* Chọn kích thước khung: 2 hàng × 2 cột cho vừa panel hẹp */
+.size-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+/* ================= Tinh chỉnh nhỏ cho antd ================= */
+
+/* Hàng nút chia đều chiều rộng.
+   Dùng thay cho Space.Compact: nút chỉ có icon + block trong Space.Compact
+   không chịu co lại nên hàng B/I/U tràn ra khỏi panel. */
+.btn-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* flex-basis 90px + wrap: panel hẹp thì nút tự xuống hàng thay vì tràn ra ngoài.
+   KHÔNG đặt min-width: 0 — nút cần giữ min-content để kích hoạt wrap, nếu không
+   nhãn dài ("Xóa thành phần") sẽ tràn ra ngoài viền nút. */
+.btn-row > * {
+  flex: 1 1 90px;
+}
+
+/* Biến thể cho nhóm nút chỉ có icon (B / I / U): luôn chia đều 1 hàng, không wrap */
+.btn-row.tight {
+  flex-wrap: nowrap;
+}
+
+.btn-row.tight > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.btn-row .ant-upload-wrapper,
+.btn-row .ant-upload {
+  display: block;
+  width: 100%;
+}
+
+.check-row .ant-checkbox-wrapper {
+  margin-inline-start: 0;
+  margin-right: 18px;
+}
+
+.settings-section .ant-tabs-nav {
+  margin-bottom: 18px;
+}
+
+.settings-section .ant-tabs-tab {
+  font-weight: 600;
+}
