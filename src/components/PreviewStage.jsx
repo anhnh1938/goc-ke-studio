@@ -40,7 +40,11 @@ export default function PreviewStage() {
   const handleExport = async () => {
     setExporting(true)
     try {
-      await exportPagePng(paperRef.current)
+      const r = await exportPagePng(paperRef.current, page.exportDpi)
+      message.success(
+        `Đã xuất ảnh ${r.width} × ${r.height} px · ${page.exportDpi} dpi · ` +
+          `${(r.bytes / 1024 / 1024).toFixed(1)} MB`
+      )
     } catch (err) {
       message.error(`Không xuất được ảnh: ${err.message}`)
     } finally {

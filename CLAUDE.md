@@ -131,8 +131,14 @@ quan sát cả hai sẽ dao động vô hạn. Xem comment trong `PreviewStage.j
 **Kéo thành phần con phải tắt HTML5 drag của item cha**, nếu không hai cơ chế kéo xung
 đột. `SubElement` gọi `setDragLocked` do `FrameItem` truyền xuống.
 
-**Tô màu vùng padding** dùng thủ thuật 2 lớp gradient (`.a4-text.show-padding`): lớp trắng
-phủ content-box, lớp xanh phủ padding-box, phần chênh lệch chính là vùng padding.
+**Tô màu vùng padding** là một lớp phủ absolute có `border` dày đúng bằng padding từng
+phía (`.pad-overlay`): với phần tử absolute, `inset: 0` bám theo **padding box** của cha
+nên vành border trùng khít vùng padding.
+
+Từng làm bằng 2 lớp gradient (trắng phủ content-box + xanh phủ padding-box, lấy phần
+chênh lệch). Trên màn hình giống hệt nhau, nhưng **html2canvas-pro không vẽ được nhiều
+lớp background có `background-clip` khác nhau** nên ảnh xuất ra mất màu pad. Đừng đổi
+về cách cũ.
 
 ## Mẫu có sẵn
 
@@ -166,19 +172,42 @@ kiểm thử bên dưới.
   về dạng đó cho một số giá trị mặc định, nên **lỗi chỉ lộ ra trên một số máy**, test
   ở Edge headless tại đây không bắt được.
 
-Hai chỗ khác dễ sai:
+Ba chỗ khác dễ sai:
 
 - Phải truyền `width` / `height` bằng `paper.offsetWidth/offsetHeight`. Mặc định
   html2canvas đo bằng `getBoundingClientRect()`, mà `.a4-scaler` đang
   `transform: scale()` nên ảnh ra sai cỡ.
-- Import động (`await import(...)`) để 200KB thư viện không nằm trong bundle khởi
+- Import động (`await import(...)`) để 250KB thư viện không nằm trong bundle khởi
   động; vite tách thành chunk riêng.
+- **Phải ghi chunk `pHYs` vào file PNG.** `canvas.toBlob()` không ghi DPI, nên
+  Word / Photoshop / trình xem ảnh coi ảnh là 96 dpi và in ra to gấp ~3 khổ A4,
+  hoặc tự co về "vừa trang" rồi mất nét. `withPngDpi()` trong `output.js` chèn
+  chunk đó (kèm CRC32 tự tính — sai CRC là file bị coi như hỏng), và ghi đè nếu
+  browser đã tự ghi sẵn một chunk `pHYs`.
 
-Guide (tô padding, viền nét đứt, nhãn cỡ, viền chọn, cụm nút) tắt qua class
-`exporting` trên `<html>`, dùng cho cả xuất ảnh và in. `@media print` lặp lại các quy
-tắc đó để Ctrl+P trực tiếp từ browser cũng ra bản sạch. In bỏ `transform` của
-`.a4-scaler` và `width/height` inline của `.a4-viewport` (cần `!important` vì JS đặt
-inline) để ra đúng 210 × 297 mm.
+**Độ phân giải:** `page.exportDpi` (mặc định 300), chọn ở tab Preview qua
+`EXPORT_DPI_OPTIONS`. `scale = dpi / 96` vì 1 inch = 96 px CSS. Từng để cứng
+`scale: 2` = 192 dpi: nhìn trên màn thì ổn nhưng in ra nhòe, dưới mức 300 dpi tối
+thiểu của in ấn. Đo thực tế: 150 → 1240 × 1754 px (0.06 MB), 300 → 2481 × 3509
+(0.21 MB), 600 → 4962 × 7018 (0.72 MB, ~1.5 s).
+
+**Nút "In" không liên quan tới `exportDpi`.** Bản in không đi qua canvas — browser
+in chữ ở dạng vector nên nét theo độ phân giải máy in. Nhòe khi in chỉ đến từ ảnh
+raster mà người dùng chèn vào (thành phần con dạng ảnh), hoặc từ `transform` còn
+sót (đã bỏ trong `@media print`).
+
+**Ảnh xuất ra / bản in = đúng những gì đang thấy trên preview, TRỪ phần điều khiển.**
+Class `exporting` trên `<html>` chỉ ẩn cụm nút trên item, tay nắm resize và viền chọn.
+Viền khung nét đứt, tô màu padding, nhãn cỡ khung thì **giữ** — chúng bật/tắt bằng
+checkbox ở tab Preview và ô "Hiện màu" của từng item, tức là lựa chọn của người dùng.
+Đã từng ẩn hết cho "sạch" và bị bắt lỗi: bật màu padding lên là để nó có trong ảnh.
+`@media print` lặp lại các quy tắc đó để Ctrl+P trực tiếp cũng không có nút.
+
+Hai chỗ nữa của bản in: bỏ `transform` của `.a4-scaler` và `width/height` inline của
+`.a4-viewport` (cần `!important` vì JS đặt inline) để ra đúng 210 × 297 mm; và
+`.a4-text.show-padding` phải có `print-color-adjust: exact` — tô padding là
+`background-image`, browser bỏ hết background khi in nếu người dùng không tự bật
+"Background graphics".
 
 ## Quy ước UI (antd)
 

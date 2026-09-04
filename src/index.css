@@ -522,14 +522,22 @@ body {
 }
 
 /* Tô màu vùng padding (kiểu DevTools).
-   2 lớp background: lớp trắng phủ đúng content-box, lớp xanh phủ padding-box
-   -> phần chênh lệch giữa 2 lớp chính là vùng padding. */
-.a4-text.show-padding {
-  background-image: linear-gradient(#ffffff, #ffffff),
-    linear-gradient(rgba(46, 160, 67, 0.35), rgba(46, 160, 67, 0.35));
-  background-origin: content-box, padding-box;
-  background-clip: content-box, padding-box;
-  background-repeat: no-repeat;
+   Một lớp phủ absolute với `border` dày đúng bằng padding từng phía: với phần tử
+   absolute, `inset: 0` bám theo PADDING BOX của cha, nên vành border trùng khít
+   vùng padding.
+
+   Trước đây làm bằng 2 lớp background (trắng phủ content-box + xanh phủ
+   padding-box, lấy phần chênh). Trông giống hệt trên màn hình nhưng
+   html2canvas-pro KHÔNG vẽ được nhiều lớp background có background-clip khác
+   nhau, nên ảnh xuất ra mất màu pad. Đừng đổi về cách cũ. */
+.pad-overlay {
+  position: absolute;
+  inset: 0;
+  border-style: solid;
+  border-color: rgba(46, 160, 67, 0.35);
+  pointer-events: none;
+  /* Text chính ở lớp 1, nên lớp phủ nằm dưới nó và dưới thành phần con z >= 1 */
+  z-index: 0;
 }
 
 /* Bật/tắt các đường guide từ tab Preview */
@@ -677,20 +685,15 @@ body {
 
 /* ================= Xuất ảnh / In ================= */
 /* Class `exporting` do src/lib/output.js gắn lên <html> trong lúc chụp ảnh.
-   Tất cả những thứ tắt ở đây là phương tiện căn chỉnh, không phải nội dung:
-   tô padding, viền nét đứt, nhãn cỡ khung, viền chọn, cụm nút trên item. */
+   Chỉ ẩn phần ĐIỀU KHIỂN: cụm nút trên item, tay nắm resize, viền chọn.
+
+   Viền khung nét đứt, tô màu padding và nhãn cỡ khung thì VẪN vào ảnh — chúng
+   bật/tắt bằng checkbox ở tab Preview và ô "Hiện màu" của từng item, nên là
+   lựa chọn của người dùng, không phải rác của editor. Ảnh xuất ra đúng bằng
+   những gì đang thấy trên preview, trừ mấy cái nút. */
 .exporting .item-tools,
-.exporting .resize-handle,
-.exporting .frame-caption {
+.exporting .resize-handle {
   display: none !important;
-}
-
-.exporting .a4-text.framed {
-  border-color: transparent !important;
-}
-
-.exporting .a4-text.show-padding {
-  background-image: none !important;
 }
 
 .exporting .frame-item.selected .a4-text,
@@ -820,8 +823,10 @@ body {
 }
 
 /* ================= In ================= */
-/* Chỉ tờ A4 được in, đúng 210 × 297 mm. Guide cũng bị tắt ở đây (không chỉ dựa
-   vào class `exporting`) để Ctrl+P trực tiếp từ browser cũng ra bản sạch. */
+/* Chỉ tờ A4 được in, đúng 210 × 297 mm. Phần điều khiển cũng bị ẩn ngay ở đây
+   (không chỉ dựa vào class `exporting`) để Ctrl+P trực tiếp từ browser cũng ra
+   bản không có nút. Viền khung / màu padding / nhãn cỡ thì giữ, giống xuất ảnh:
+   muốn bản in không có chúng thì tắt checkbox ở tab Preview trước khi in. */
 @media print {
   @page {
     size: A4;
@@ -845,7 +850,6 @@ body {
   .preview-toolbar,
   .item-tools,
   .resize-handle,
-  .frame-caption,
   .ant-modal-root,
   .ant-message {
     display: none !important;
@@ -871,12 +875,11 @@ body {
     box-shadow: none;
   }
 
-  .a4-text.framed {
-    border-color: transparent !important;
-  }
-
-  .a4-text.show-padding {
-    background-image: none !important;
+  /* Lớp tô padding là `border` nên in được kể cả khi không bật "Background
+     graphics", nhưng ép thêm cho chắc: browser vẫn có thể tự chỉnh màu nhạt. */
+  .pad-overlay {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .frame-item.selected .a4-text,

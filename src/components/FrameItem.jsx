@@ -121,15 +121,18 @@ export default function FrameItem({
 
       <div
         ref={boxRef}
-        className={[
-          'a4-text',
-          framed ? 'framed' : '',
-          item.showPad ? 'show-padding' : '',
-        ]
-          .filter(Boolean)
-          .join(' ')}
+        className={['a4-text', framed ? 'framed' : ''].filter(Boolean).join(' ')}
         style={boxStyle}
       >
+        {item.showPad && (
+          <div
+            className="pad-overlay"
+            style={{
+              borderWidth: `${item.padTop}mm ${item.padRight}mm ${item.padBottom}mm ${item.padLeft}mm`,
+            }}
+          />
+        )}
+
         <span
           className="a4-text-inner"
           style={{ textDecoration: item.underline ? 'underline' : 'none' }}

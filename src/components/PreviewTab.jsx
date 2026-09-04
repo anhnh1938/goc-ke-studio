@@ -1,7 +1,13 @@
 import { Checkbox, InputNumber, Select, Slider } from 'antd'
-import { STAGE_SWATCHES } from '../constants'
+import { EXPORT_DPI_OPTIONS, PX_PER_MM, STAGE_SWATCHES } from '../constants'
 import { useEditorStore } from '../store/useEditorStore'
 import Swatches from './Swatches'
+
+// Số điểm ảnh của tờ A4 (210 × 297 mm) ở một mức dpi
+const pixelsAt = (dpi) => {
+  const k = dpi / 96
+  return `${Math.round(210 * PX_PER_MM * k)} × ${Math.round(297 * PX_PER_MM * k)} px`
+}
 
 /* Các thiết lập áp cho cả trang A4 / vùng xem trước. */
 export default function PreviewTab() {
@@ -81,11 +87,29 @@ export default function PreviewTab() {
         </Checkbox>
         </div>
         <p className="hint">
-          Đây là đường guide hỗ trợ căn chỉnh, không phải nội dung in.
+          Đang bật thì có luôn trong ảnh xuất ra và bản in — tắt ở đây nếu không
+          muốn. Chỉ các nút thao tác trên item là không bao giờ vào ảnh.
         </p>
       </div>
 
-      {/* 5. Màu nền vùng preview */}
+      {/* 5. Chất lượng ảnh xuất ra */}
+      <div className="form-group full">
+        <span className="form-label">Chất lượng ảnh xuất ra (nút "Xuất PNG"):</span>
+        <Select
+          style={{ width: '100%' }}
+          value={page.exportDpi}
+          onChange={(exportDpi) => setPage({ exportDpi })}
+          options={EXPORT_DPI_OPTIONS}
+        />
+        <p className="hint">
+          Ảnh ra {pixelsAt(page.exportDpi)}, có ghi sẵn {page.exportDpi} dpi vào file
+          nên in đúng khổ A4 mà không nhòe. Càng cao càng lâu và file càng nặng.
+          Nút "In" thì không liên quan tới mức này — bản in đi thẳng ra máy in ở dạng
+          vector, luôn nét nhất có thể.
+        </p>
+      </div>
+
+      {/* 6. Màu nền vùng preview */}
       <div className="form-group full">
         <span className="form-label">Màu nền vùng xem trước:</span>
         <Swatches

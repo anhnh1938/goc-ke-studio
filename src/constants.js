@@ -49,6 +49,14 @@ export const TEXT_SWATCHES = [
 
 export const STAGE_SWATCHES = ['#525659', '#1e1e1e', '#8a8f98', '#eef1f5']
 
+/* Độ phân giải ảnh xuất ra. 96 dpi là 1:1 với px CSS; in ấn cần tối thiểu 300.
+   600 dpi cho ra ~35 triệu điểm ảnh nên chậm và file nặng, chỉ dùng khi cần. */
+export const EXPORT_DPI_OPTIONS = [
+  { value: 150, label: '150 dpi — xem trên máy' },
+  { value: 300, label: '300 dpi — in ấn (khuyên dùng)' },
+  { value: 600, label: '600 dpi — in chất lượng cao' },
+]
+
 /* Nhãn "3 × 4" = cao 3, rộng 4 -> w là số sau, h là số trước.
    Mỗi cỡ mang theo padding riêng (mm), tên trường giống hệt DEFAULT_ITEM để
    chọn cỡ là spread thẳng vào item được. Khung càng thấp thì chừa trên/dưới
@@ -98,4 +106,5 @@ export const DEFAULT_PAGE = {
   showBorder: true,
   showCaption: true,
   stageColor: '#525659',
+  exportDpi: 300, // độ phân giải ảnh PNG xuất ra
 }
