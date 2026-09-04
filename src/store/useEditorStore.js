@@ -35,9 +35,16 @@ export const useEditorStore = create((set, get) => ({
   elModalOpen: false, // modal tùy chỉnh thành phần con
 
   // ---------- CHỌN ----------
-  // Đổi item thì đóng modal: thành phần con đang mở không còn thuộc item nào nữa
   selectItem: (id, elId = null) =>
-    set({ selectedId: id, selectedElId: elId, elModalOpen: false }),
+    set((s) => ({
+      selectedId: id,
+      selectedElId: elId,
+      /* Đổi sang item KHÁC thì đóng modal: thành phần đang mở không còn thuộc item
+         nào nữa. Nhưng chạm sang thành phần khác trong CÙNG item thì giữ modal và
+         đổi nội dung nó sang thành phần vừa chạm — modal giờ không có mask nên
+         người dùng bấm thẳng lên trang để chuyển qua lại giữa các thành phần. */
+      elModalOpen: s.selectedId === id && elId !== null ? s.elModalOpen : false,
+    })),
   selectElement: (elId) => set({ selectedElId: elId }),
 
   // ---------- MODAL THÀNH PHẦN CON ----------

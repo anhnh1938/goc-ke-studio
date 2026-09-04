@@ -45,8 +45,14 @@ control cho cả hai và rất khó đoán đang sửa cái gì.
 `.form-group` nên phải đặt trong một `.settings-grid`.
 
 Modal điều khiển bằng `elModalOpen` trong store. Nó tự mở khi thêm thành phần
-(`addElement`) và tự đóng khi xoá thành phần hoặc đổi sang item khác (`selectItem`) —
-nếu không modal sẽ trỏ vào một thành phần không còn tồn tại.
+(`addElement`) và tự đóng khi xoá thành phần hoặc đổi sang **item khác**
+(`selectItem`) — nếu không modal sẽ trỏ vào một thành phần không còn tồn tại. Chọn
+thành phần khác trong **cùng** item thì modal giữ nguyên và đổi nội dung sang thành
+phần vừa chọn: modal không có mask nên người dùng bấm thẳng lên trang để chuyển qua
+lại giữa các thành phần.
+
+Modal này cố tình không phải modal chặn: `mask={false}`, bề rộng khớp panel bên phải,
+dạt sang phải để tờ A4 luôn nhìn thấy được. Xem mục "Sửa mà không thấy" bên dưới.
 
 ## Những chỗ dễ sai
 
@@ -89,6 +95,35 @@ Lưu ý khi kiểm tra: `justify-content` thường **không** làm đổi hộp
 chuột phải chia cho `useEditorStore.getState().scale` trước khi đổi sang mm. Xem
 `SubElement.jsx`.
 
+**"Sửa mà không thấy" — ba cơ chế phải giữ cùng nhau.** Thành phần con có thể chỉ to
+vài mm, nằm lẫn trong chữ chính, nên sửa xong không biết mình vừa đổi cái gì:
+
+1. `ElementModal` bỏ mask và dạt sang phải. Bỏ mask thì **lớp wrap của antd vẫn phủ
+   kín màn hình và ăn hết cú click** — `.el-modal-wrap` phải `pointer-events: none`,
+   chỉ `.ant-modal` bên trong trả về `auto`.
+2. Bề rộng modal là `clamp(320px, calc(33.33vw - 40px), 560px)` cho khớp panel bên
+   phải. Để cứng 560px thì ở màn 1400px modal đè lên mép phải tờ A4 — đúng cái mà
+   việc dạt sang phải muốn tránh.
+3. `.el-modal .ant-modal-body` phải có `max-height` + `overflow-y`. Wrap đang
+   `pointer-events: none` và không còn mask, nên modal cao quá màn hình là đáy nó
+   (nút Xong / Xóa thành phần) tụt xuống dưới và **không có cách nào cuộn tới**.
+
+Kèm theo: `PreviewStage` cuộn item đang chọn vào tầm nhìn (`block: 'nearest'` để không
+giật khi nó đã hiện), và `.sub-el.selected` nháy 2 nhịp bằng keyframes `el-flash`.
+
+**Lăn chuột để zoom phải gắn listener thủ công.** React đăng ký `wheel` ở dạng passive
+nên `preventDefault()` trong `onWheel` không có tác dụng và trang vẫn cuộn theo — xem
+`useEffect` trong `PreviewStage`. Việc neo điểm dưới con trỏ phải **hoãn tới
+`updateScale`** (qua `anchorRef`), vì chỉ lúc đó `.a4-viewport` mới có kích thước mới;
+công thức `(scroll + c) * ratio - c` khớp chính xác nhờ `align-items: safe center` rơi
+về canh đầu khi trang lớn hơn khung.
+
+Kéo nền để pan thì phải bỏ qua `.frame-item` (item có HTML5 drag và thành phần con có
+pointer drag riêng), bỏ qua `.preview-toolbar` và `button`, và bỏ qua
+`pointerType === 'touch'` — cảm ứng đã có cuộn sẵn của browser, giành lấy là phải tự lo
+cả đà cuộn. Thanh cuộn của `.preview-section` bị ẩn bằng CSS chứ không phải
+`overflow: hidden`: vẫn cần cuộn được.
+
 **ResizeObserver chỉ quan sát `.a4-page`, tuyệt đối không quan sát vùng cuộn
 `.preview-section`.** Đổi kích thước viewport làm thanh cuộn xuất hiện/biến mất → nếu
 quan sát cả hai sẽ dao động vô hạn. Xem comment trong `PreviewStage.jsx`.
@@ -114,6 +149,36 @@ lấp ~90% bề ngang lòng khung. Lòng khung = kích thước khung trừ padd
 đó**. Cỡ 3 × 4 cm hiện chừa 10/0/2/0 mm → lòng trong 40 × 18 mm (số cũ 36 × 26 mm ứng với
 padding đều 2 mm). Đổi nội dung mẫu hoặc padding của cỡ khung thì phải đo lại, xem mục
 kiểm thử bên dưới.
+
+## Xuất ảnh / In
+
+`src/lib/output.js`. Nút nằm trên `.preview-toolbar` (luôn thấy, không phụ thuộc tab).
+
+**Thư viện phải là `html2canvas-pro`, đừng đổi lại.** Hai cái bẫy đã đạp phải:
+
+- `html-to-image` / mọi hướng SVG `foreignObject` **không dùng được**: chúng bắt buộc
+  nhúng webfont thành data URI, mà `public/fonts/NotoColorEmoji.ttf` nặng **33 MB**.
+  `html2canvas-pro` vẽ chữ bằng canvas `fillText` nên chỉ cần font đã load trong
+  document, không nhúng gì.
+- `html2canvas` bản gốc dừng ở 1.4.1 (2022) và chết ngay với
+  `Attempting to parse an unsupported color function "oklch"` khi computed style có
+  màu dạng oklch/lab/color-mix. CSS của app không hề dùng oklch — browser mới tự trả
+  về dạng đó cho một số giá trị mặc định, nên **lỗi chỉ lộ ra trên một số máy**, test
+  ở Edge headless tại đây không bắt được.
+
+Hai chỗ khác dễ sai:
+
+- Phải truyền `width` / `height` bằng `paper.offsetWidth/offsetHeight`. Mặc định
+  html2canvas đo bằng `getBoundingClientRect()`, mà `.a4-scaler` đang
+  `transform: scale()` nên ảnh ra sai cỡ.
+- Import động (`await import(...)`) để 200KB thư viện không nằm trong bundle khởi
+  động; vite tách thành chunk riêng.
+
+Guide (tô padding, viền nét đứt, nhãn cỡ, viền chọn, cụm nút) tắt qua class
+`exporting` trên `<html>`, dùng cho cả xuất ảnh và in. `@media print` lặp lại các quy
+tắc đó để Ctrl+P trực tiếp từ browser cũng ra bản sạch. In bỏ `transform` của
+`.a4-scaler` và `width/height` inline của `.a4-viewport` (cần `!important` vì JS đặt
+inline) để ra đúng 210 × 297 mm.
 
 ## Quy ước UI (antd)
 

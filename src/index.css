@@ -215,6 +215,20 @@ body {
   /* safe: khi zoom lớn hơn khung thì không bị cắt mất mép trái */
   align-items: safe center;
   gap: 12px;
+  /* Vẫn cuộn được (lăn chuột zoom, kéo nền để di chuyển) nhưng ẩn thanh cuộn:
+     nó chiếm chỗ và làm vùng xem trước trông như một khung cuộn tài liệu. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.preview-section::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Kéo nền để di chuyển tầm nhìn */
+.preview-section.panning {
+  cursor: grabbing;
 }
 
 .preview-toolbar {
@@ -225,6 +239,20 @@ body {
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: center;
+  /* Toolbar không phải vùng kéo: kéo ở đây là chọn chữ, không phải pan */
+  cursor: default;
+}
+
+.preview-toolbar .zoom-badge {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  min-width: 4ch;
+}
+
+.preview-toolbar .toolbar-hint {
+  color: #9aa1a9;
 }
 
 /* Khung giữ chỗ đúng bằng kích thước trang sau khi thu nhỏ.
@@ -390,6 +418,51 @@ body {
 
 .sub-el.dragging-el {
   opacity: 0.75;
+}
+
+/* Nháy 2 nhịp khi thành phần vừa được chọn / vừa thêm.
+   Riêng viền cam thì dễ lọt khỏi mắt: thành phần con có thể chỉ to vài mm và
+   nằm lẫn trong chữ chính, thêm mới xong không biết nó ở đâu. Animation chạy
+   một lần lúc class .selected được gắn vào. */
+@keyframes el-flash {
+  from {
+    box-shadow: 0 0 0 5px rgba(255, 149, 0, 0.5);
+  }
+  to {
+    box-shadow: 0 0 0 0 rgba(255, 149, 0, 0);
+  }
+}
+
+.sub-el.selected {
+  animation: el-flash 0.45s ease-out 2;
+}
+
+/* ================= Modal tùy chỉnh thành phần con ================= */
+/* Bỏ mask nhưng lớp wrap của antd vẫn phủ kín màn hình và ăn hết cú click,
+   nên phải trả pointer-events về cho trang, chỉ giữ lại trên thân modal. */
+.el-modal-wrap {
+  pointer-events: none;
+}
+
+.el-modal-wrap .ant-modal {
+  pointer-events: auto;
+}
+
+/* Dạt sang phải, chừa tờ A4 bên trái để thấy thành phần đang sửa đổi live */
+.el-modal {
+  top: 24px;
+  margin-left: auto;
+  margin-right: 24px;
+}
+
+/* Modal phải nằm gọn trong tầm màn hình, phần dài thì cuộn trong thân nó.
+   Bắt buộc vì lớp wrap đang `pointer-events: none` và không còn mask: modal cao
+   quá thì đáy (nút Xong / Xóa thành phần) tụt xuống dưới màn hình và KHÔNG có
+   cách nào cuộn tới. 180px là chỗ chừa cho top + tiêu đề + footer. */
+.el-modal .ant-modal-body {
+  max-height: calc(100vh - 180px);
+  max-height: calc(100dvh - 180px);
+  overflow-y: auto;
 }
 
 /* Nhãn nhỏ ghi kích thước khung, không nằm trong vùng in.
@@ -602,6 +675,41 @@ body {
   font-weight: 600;
 }
 
+/* ================= Xuất ảnh / In ================= */
+/* Class `exporting` do src/lib/output.js gắn lên <html> trong lúc chụp ảnh.
+   Tất cả những thứ tắt ở đây là phương tiện căn chỉnh, không phải nội dung:
+   tô padding, viền nét đứt, nhãn cỡ khung, viền chọn, cụm nút trên item. */
+.exporting .item-tools,
+.exporting .resize-handle,
+.exporting .frame-caption {
+  display: none !important;
+}
+
+.exporting .a4-text.framed {
+  border-color: transparent !important;
+}
+
+.exporting .a4-text.show-padding {
+  background-image: none !important;
+}
+
+.exporting .frame-item.selected .a4-text,
+.exporting .sub-el.selected {
+  outline: none !important;
+  animation: none !important;
+}
+
+/* Bỏ phép thu nhỏ của màn hình: ảnh xuất ra phải đúng cỡ thật của trang.
+   .a4-viewport nhận width/height inline từ JS nên cần !important. */
+.exporting .a4-scaler {
+  transform: none !important;
+}
+
+.exporting .a4-viewport {
+  width: auto !important;
+  height: auto !important;
+}
+
 /* ================= Mobile / tablet dọc ================= */
 /* Panel cần tối thiểu 360px, cộng trang A4 thu nhỏ nữa thì dưới ~900px lưới 2 cột
    hết chỗ. Xếp dọc: preview ở trên (cao cố định), panel ở dưới lấy phần còn lại.
@@ -620,6 +728,12 @@ body {
     grid-column: 1;
     grid-row: 1;
     padding: 12px 8px;
+  }
+
+  /* Không có chuột thì gợi ý lăn/kéo vô nghĩa, mà toolbar wrap thêm một dòng là
+     mất luôn chỗ của vùng preview vốn đã hẹp. */
+  .preview-toolbar .toolbar-hint {
+    display: none;
   }
 
   .settings-section {
@@ -682,5 +796,92 @@ body {
      thoại xuất hiện hai thanh cuộn lồng nhau, rất khó bấm. */
   .preset-grid {
     max-height: none;
+  }
+
+  /* Lưới xếp dọc nên "dạt sang phải" không còn nghĩa gì: đẩy modal xuống đáy như
+     bottom sheet, chừa vùng preview ở trên để vẫn thấy tờ A4.
+     Neo bằng position: absolute chứ KHÔNG phải flex + margin-top: auto — cách đó
+     bị stretch, modal dính lên đỉnh và che hết vùng preview.
+     Trải gần hết bề ngang; width/inset cần !important vì antd đặt width inline. */
+  .el-modal {
+    position: absolute;
+    top: auto;
+    inset: auto 8px 0;
+    margin: 0;
+    padding-bottom: 0;
+    width: auto !important;
+  }
+
+  /* Giữ bottom sheet đủ thấp để phần preview ở trên không bị che */
+  .el-modal .ant-modal-body {
+    max-height: 42vh;
+    max-height: 42dvh;
+  }
+}
+
+/* ================= In ================= */
+/* Chỉ tờ A4 được in, đúng 210 × 297 mm. Guide cũng bị tắt ở đây (không chỉ dựa
+   vào class `exporting`) để Ctrl+P trực tiếp từ browser cũng ra bản sạch. */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  html,
+  body,
+  #root {
+    height: auto;
+    overflow: visible;
+    background: #fff;
+  }
+
+  .app-layout {
+    display: block;
+    height: auto;
+  }
+
+  .settings-section,
+  .preview-toolbar,
+  .item-tools,
+  .resize-handle,
+  .frame-caption,
+  .ant-modal-root,
+  .ant-message {
+    display: none !important;
+  }
+
+  .preview-section {
+    display: block;
+    padding: 0;
+    overflow: visible;
+    background: #fff !important;
+  }
+
+  .a4-scaler {
+    transform: none !important;
+  }
+
+  .a4-viewport {
+    width: auto !important;
+    height: auto !important;
+  }
+
+  .a4-page {
+    box-shadow: none;
+  }
+
+  .a4-text.framed {
+    border-color: transparent !important;
+  }
+
+  .a4-text.show-padding {
+    background-image: none !important;
+  }
+
+  .frame-item.selected .a4-text,
+  .sub-el.selected {
+    outline: none !important;
+    animation: none !important;
   }
 }

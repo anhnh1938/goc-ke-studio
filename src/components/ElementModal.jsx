@@ -39,8 +39,17 @@ export default function ElementModal() {
       open={open}
       onCancel={closeElModal}
       title={`Tùy chỉnh ${title.toLowerCase()}`}
-      width={560}
+      /* Rộng bằng panel bên phải (cột 1fr của lưới `2fr 1fr`, tối thiểu 360px)
+         trừ chỗ cho lề: 560px cứng thì ở màn 1400px modal đè lên mép phải tờ A4,
+         đúng cái mà việc dạt sang phải muốn tránh. */
+      width="clamp(320px, calc(33.33vw - 40px), 560px)"
       destroyOnClose
+      /* Không mask + dạt sang phải (xem .el-modal trong index.css): modal mặc
+         định nằm giữa và làm mờ nền, che đúng tờ A4 nên sửa mà không thấy gì
+         đang đổi. Bỏ mask thì trang vẫn bấm được, chọn thẳng thành phần khác. */
+      mask={false}
+      className="el-modal"
+      wrapClassName="el-modal-wrap"
       footer={
         <div className="modal-footer">
           <Button danger icon={<DeleteOutlined />} onClick={deleteElement}>
