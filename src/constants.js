@@ -3,10 +3,10 @@
 export const PX_PER_MM = 96 / 25.4
 
 export const FONT_OPTIONS = [
+  { value: "'Roboto', 'iOSEmojiCustom', sans-serif", label: 'Roboto (Tiêu chuẩn)' },
   { value: "'DynaPuff', 'iOSEmojiCustom', cursive", label: 'DynaPuff (Google Font)' },
   { value: "'Caveat', 'iOSEmojiCustom', cursive", label: 'Caveat (Viết tay)' },
   { value: "'Inter', 'iOSEmojiCustom', sans-serif", label: 'Inter (Hiện đại)' },
-  { value: "'Roboto', 'iOSEmojiCustom', sans-serif", label: 'Roboto (Tiêu chuẩn)' },
   { value: "'Be Vietnam Pro', 'iOSEmojiCustom', sans-serif", label: 'Be Vietnam Pro (Tiếng Việt)' },
   { value: "'Merriweather', 'iOSEmojiCustom', serif", label: 'Merriweather (Có chân)' },
 ]
@@ -29,7 +29,7 @@ export const STAGE_SWATCHES = ['#525659', '#1e1e1e', '#8a8f98', '#eef1f5']
    mỗi bên là mất luôn 27% chiều cao. */
 export const FRAME_SIZES = [
   { label: 'Không khung', w: 0, h: 0, padTop: 2, padRight: 2, padBottom: 2, padLeft: 2 },
-  { label: '3 × 4 cm', w: 4, h: 3, padTop: 2, padRight: 2, padBottom: 2, padLeft: 2 },
+  { label: '3 × 4 cm', w: 4, h: 3, padTop: 10, padRight: 0, padBottom: 2, padLeft: 0 },
   { label: '3 × 5 cm', w: 5, h: 3, padTop: 2, padRight: 2, padBottom: 2, padLeft: 2 },
   { label: '1.5 × 6 cm', w: 6, h: 1.5, padTop: 1, padRight: 2, padBottom: 1, padLeft: 2 },
 ]
@@ -49,7 +49,7 @@ export const findFrameSize = (w, h) =>
 
 export const DEFAULT_ITEM = {
   text: 'Nội dung mới ✨',
-  fontFamily: "'DynaPuff', 'iOSEmojiCustom', cursive",
+  fontFamily: FONT_OPTIONS[0].value,
   fontSize: 10,
   bold: false,
   italic: false,
@@ -64,7 +64,7 @@ export const DEFAULT_ITEM = {
 export const DEFAULT_PAGE = {
   zoomMode: 'auto', // auto | manual
   zoomLevel: 100,
-  pageMargin: 20, // mm
+  pageMargin: 10, // mm
   itemGap: 5, // mm
   showBorder: true,
   showCaption: true,
