@@ -29,6 +29,8 @@ export default function SubElement({ data, itemId, selected, boxRef, setDragLock
     style.textDecoration = data.underline ? 'underline' : 'none'
     style.color = data.color
     style.lineHeight = data.lineHeight
+    // Chỉ có tác dụng khi w cố định hoặc chữ dài xuống nhiều dòng
+    style.textAlign = data.align ?? 'center'
   }
 
   const handlePointerDown = (e) => {

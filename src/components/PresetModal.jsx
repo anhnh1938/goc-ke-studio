@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Empty, Input, Modal } from 'antd'
+import { ALIGN_ITEMS_BY_VALIGN, JUSTIFY_BY_ALIGN } from '../constants'
 import { PRESETS } from '../data/presets'
 import { useEditorStore } from '../store/useEditorStore'
 
@@ -15,7 +16,12 @@ function PresetPreview({ item }) {
     fontSize: `${item.fontSize}px`,
     lineHeight: item.lineHeight,
     color: '#111111',
-    padding: '2mm',
+    // Lấy đúng padding + căn lề của mẫu, nếu không preview sẽ khác lúc thêm thật:
+    // cỡ 3 × 4 cm chừa 10 mm trên nên chữ nằm thấp hơn hẳn so với padding đều 2 mm.
+    padding: `${item.padTop}mm ${item.padRight}mm ${item.padBottom}mm ${item.padLeft}mm`,
+    textAlign: item.align ?? 'center',
+    justifyContent: JUSTIFY_BY_ALIGN[item.align] ?? 'center',
+    alignItems: ALIGN_ITEMS_BY_VALIGN[item.valign] ?? 'center',
   }
 
   return (
@@ -41,6 +47,7 @@ function PresetPreview({ item }) {
               width: 'auto',
               fontSize: `${el.fontSize}px`,
               lineHeight: el.lineHeight,
+              textAlign: el.align ?? 'center',
               zIndex: el.z,
             }}
           >

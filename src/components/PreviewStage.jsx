@@ -45,6 +45,10 @@ export default function PreviewStage() {
     viewport.style.width = `${pageWidth * scale}px`
     viewport.style.height = `${pageHeight * scale}px`
 
+    // Nghịch đảo scale, cho phần UI nổi trên trang tự bù lại phép thu nhỏ và
+    // giữ đúng kích thước thật trên màn hình (xem .item-tools ở index.css).
+    paper.style.setProperty('--inv-scale', String(1 / (scale || 1)))
+
     setScale(scale) // dùng khi kéo thành phần con
     setPercent(Math.round(scale * 100))
   }, [page.zoomMode, page.zoomLevel, setScale])

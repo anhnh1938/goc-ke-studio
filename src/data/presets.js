@@ -30,6 +30,7 @@ const ELEMENT_DEFAULTS = {
   underline: false,
   color: '#111111', // emoji màu bỏ qua trường này
   lineHeight: 1,
+  align: 'center',
 }
 
 export const PRESETS = raw.presets.map((preset) => {
@@ -43,7 +44,14 @@ export const PRESETS = raw.presets.map((preset) => {
     fontSize: preset.fontSize,
     lineHeight: preset.lineHeight ?? raw.defaults.lineHeight,
     fontFamily: preset.fontFamily ?? raw.defaults.fontFamily,
-    ...pick(preset, ['padTop', 'padRight', 'padBottom', 'padLeft']),
+    ...pick(preset, [
+      'padTop',
+      'padRight',
+      'padBottom',
+      'padLeft',
+      'align',
+      'valign',
+    ]),
   }
   item.elements = (preset.elements || []).map((el) => ({
     ...ELEMENT_DEFAULTS,

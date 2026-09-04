@@ -84,15 +84,17 @@ export const useEditorStore = create((set, get) => ({
     }),
 
   // ---------- SẮP XẾP ----------
-  moveSelected: (delta) =>
+  // Đẩy item lùi / tiến 1 chỗ. Kéo thả trên trang A4 dùng HTML5 drag nên không có
+  // trên màn hình cảm ứng — hai nút mũi tên trên item là đường duy nhất ở mobile.
+  moveItem: (id, delta) =>
     set((s) => {
-      const index = s.items.findIndex((it) => it.id === s.selectedId)
+      const index = s.items.findIndex((it) => it.id === id)
       const target = index + delta
       if (index === -1 || target < 0 || target >= s.items.length) return s
       const items = [...s.items]
       const [item] = items.splice(index, 1)
       items.splice(target, 0, item)
-      return { items }
+      return { items, selectedId: item.id }
     }),
 
   // Kéo thả trên trang A4: thả item dragId trước/sau item targetId

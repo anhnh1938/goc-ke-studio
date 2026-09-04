@@ -1,14 +1,43 @@
 import { Button, Input, InputNumber, Select, Slider } from 'antd'
-import { BoldOutlined, ItalicOutlined, UnderlineOutlined } from '@ant-design/icons'
-import { FONT_OPTIONS, TEXT_SWATCHES } from '../constants'
+import {
+  AlignCenterOutlined,
+  AlignLeftOutlined,
+  AlignRightOutlined,
+  BoldOutlined,
+  ItalicOutlined,
+  UnderlineOutlined,
+  VerticalAlignBottomOutlined,
+  VerticalAlignMiddleOutlined,
+  VerticalAlignTopOutlined,
+} from '@ant-design/icons'
+import { ALIGN_OPTIONS, FONT_OPTIONS, TEXT_SWATCHES, VALIGN_OPTIONS } from '../constants'
 import Swatches from './Swatches'
+
+const ALIGN_ICONS = {
+  left: <AlignLeftOutlined />,
+  center: <AlignCenterOutlined />,
+  right: <AlignRightOutlined />,
+}
+
+const VALIGN_ICONS = {
+  top: <VerticalAlignTopOutlined />,
+  middle: <VerticalAlignMiddleOutlined />,
+  bottom: <VerticalAlignBottomOutlined />,
+}
 
 /* Nhóm control chữ dùng chung cho text chính của item (panel) và cho chữ con
    (modal). Render ra các .form-group nên phải đặt trong một .settings-grid.
 
    value  = đối tượng đang sửa (item hoặc thành phần con)
-   onChange = nhận patch, thường là updateSelected / updateTarget */
-export default function TypographyFields({ value, onChange, textLabel, textId }) {
+   onChange = nhận patch, thường là updateSelected / updateTarget
+   showValign = hiện thêm hàng căn dọc; chỉ item có khung cao cố định mới cần */
+export default function TypographyFields({
+  value,
+  onChange,
+  textLabel,
+  textId,
+  showValign = false,
+}) {
   return (
     <>
       <div className="form-group full">
@@ -67,6 +96,36 @@ export default function TypographyFields({ value, onChange, textLabel, textId })
             onClick={() => onChange({ underline: !value?.underline })}
           />
         </div>
+      </div>
+
+      <div className="form-group">
+        <span className="form-label">Căn lề:</span>
+        <div className="btn-row tight">
+          {ALIGN_OPTIONS.map((opt) => (
+            <Button
+              key={opt.value}
+              block
+              title={opt.label}
+              icon={ALIGN_ICONS[opt.value]}
+              type={(value?.align ?? 'center') === opt.value ? 'primary' : 'default'}
+              onClick={() => onChange({ align: opt.value })}
+            />
+          ))}
+        </div>
+        {showValign && (
+          <div className="btn-row tight" style={{ marginTop: 8 }}>
+            {VALIGN_OPTIONS.map((opt) => (
+              <Button
+                key={opt.value}
+                block
+                title={opt.label}
+                icon={VALIGN_ICONS[opt.value]}
+                type={(value?.valign ?? 'middle') === opt.value ? 'primary' : 'default'}
+                onClick={() => onChange({ valign: opt.value })}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="form-group">

@@ -130,7 +130,10 @@ export default function TextTab() {
           ))}
         </div>
         <p className="hint">{status}</p>
-        <p className="hint">Kéo thả item ngay trên trang A4 để đổi thứ tự.</p>
+        <p className="hint">
+          Kéo thả item ngay trên trang A4 để đổi thứ tự. Trên điện thoại thì chạm vào
+          item rồi dùng hai nút ◀ ▶ ở góc trên của nó.
+        </p>
       </div>
 
       {/* 1-6. Text chính của item */}
@@ -139,6 +142,7 @@ export default function TextTab() {
         onChange={updateSelected}
         textLabel="Nội dung văn bản (kèm Emoji):"
         textId="text-content"
+        showValign /* chỉ item có khung cao cố định nên mới căn dọc được */
       />
 
       {/* 7. Kích thước khung trên preview */}
@@ -237,6 +241,7 @@ export default function TextTab() {
                 underline: item.underline,
                 color: item.color,
                 lineHeight: item.lineHeight,
+                align: item.align,
               })
             }
           >

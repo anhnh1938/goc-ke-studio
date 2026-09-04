@@ -29,6 +29,11 @@ body {
   grid-template-columns: 2fr minmax(360px, 1fr);
   grid-template-rows: 100vh;
   height: 100vh;
+  /* dvh khai báo sau làm giá trị thật: thanh địa chỉ của browser mobile co giãn
+     nên 100vh cao hơn vùng nhìn thấy, đáy panel bị đẩy xuống dưới màn hình.
+     Browser không hiểu dvh thì bỏ qua hai dòng này và giữ 100vh ở trên. */
+  grid-template-rows: 100dvh;
+  height: 100dvh;
 }
 
 /* ================= BÊN PHẢI: Bảng điều khiển Settings ================= */
@@ -297,7 +302,9 @@ body {
   color: #111111;
 }
 
-/* Khung kích thước thật (3x4, 3x5, 2x6 cm): text nằm bên trong khung */
+/* Khung kích thước thật (3x4, 3x5, 2x6 cm): text nằm bên trong khung.
+   align-items / justify-content / text-align ở đây chỉ là giá trị mặc định —
+   FrameItem ghi đè bằng inline style theo item.align / item.valign. */
 .a4-text.framed {
   width: var(--frame-w);
   height: var(--frame-h);
@@ -593,4 +600,87 @@ body {
 
 .settings-section .ant-tabs-tab {
   font-weight: 600;
+}
+
+/* ================= Mobile / tablet dọc ================= */
+/* Panel cần tối thiểu 360px, cộng trang A4 thu nhỏ nữa thì dưới ~900px lưới 2 cột
+   hết chỗ. Xếp dọc: preview ở trên (cao cố định), panel ở dưới lấy phần còn lại.
+   Cả hai vùng đều đã là vùng cuộn nên 1fr không bị nội dung nong ra: chiều cao
+   panel bám đúng viewport, nội dung dài thì cuộn bên trong panel. */
+@media (max-width: 900px) {
+  .app-layout {
+    grid-template-columns: 1fr;
+    /* 42dvh cho preview: trang A4 thu nhỏ còn ~45% nên không cần nhiều chỗ,
+       phần lớn chiều cao dành cho panel. 180px là sàn cho màn hình rất thấp. */
+    grid-template-rows: minmax(180px, 42vh) 1fr;
+    grid-template-rows: minmax(180px, 42dvh) 1fr;
+  }
+
+  .preview-section {
+    grid-column: 1;
+    grid-row: 1;
+    padding: 12px 8px;
+  }
+
+  .settings-section {
+    grid-column: 1;
+    grid-row: 2;
+    padding: 14px 16px 40px;
+    border-left: none;
+    border-top: 1px solid #ddd;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.06);
+  }
+
+  .settings-title {
+    font-size: 17px;
+    margin-bottom: 8px;
+  }
+
+  .settings-section .ant-tabs-nav {
+    margin-bottom: 12px;
+  }
+
+  .form-group {
+    margin-bottom: 14px;
+  }
+
+  /* Cụm nút này nằm TRONG trang đang bị transform: scale(), nên ở mức zoom của
+     điện thoại (~45%) nút 24px chỉ còn ~11px trên màn hình, không bấm nổi.
+     Nhân ngược lại bằng --inv-scale (PreviewStage đặt) để nút giữ đúng 30px thật.
+     Neo ở góc trên–phải nên khi bù scale cụm nút nở về bên trái, không đẩy trang. */
+  .item-tools {
+    top: -15px;
+    right: -15px;
+    gap: 6px;
+    transform: scale(var(--inv-scale, 1));
+    transform-origin: top right;
+  }
+
+  /* 4 nút một hàng sau khi bù scale rộng ~138px, hơn cả bề ngang item đã thu nhỏ
+     (~68px) nên thò ra ngoài mép giấy và bị vùng cuộn cắt mất. Xếp 2 × 2 còn
+     ~66px, vừa trong lòng item. */
+  .frame-item:hover .item-tools,
+  .frame-item.selected .item-tools {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+  }
+
+  .item-tools button {
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+  }
+
+  /* Modal thành phần con khá dài, trên điện thoại phải cuộn được trong thân modal */
+  .ant-modal-body {
+    max-height: 68vh;
+    max-height: 68dvh;
+    overflow-y: auto;
+  }
+
+  /* Bỏ vùng cuộn riêng của gallery: thân modal đã cuộn, để cả hai thì trên điện
+     thoại xuất hiện hai thanh cuộn lồng nhau, rất khó bấm. */
+  .preset-grid {
+    max-height: none;
+  }
 }

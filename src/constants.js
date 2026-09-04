@@ -11,6 +11,33 @@ export const FONT_OPTIONS = [
   { value: "'Merriweather', 'iOSEmojiCustom', serif", label: 'Merriweather (Có chân)' },
 ]
 
+/* Căn lề chữ. Khung item là flex row nên NGANG do justify-content, DỌC do
+   align-items — hai bảng dưới đổi từ giá trị lưu trong item sang giá trị flex.
+   Chữ con chỉ dùng được phần ngang (text-align), xem SubElement. */
+export const ALIGN_OPTIONS = [
+  { value: 'left', label: 'Căn trái' },
+  { value: 'center', label: 'Căn giữa' },
+  { value: 'right', label: 'Căn phải' },
+]
+
+export const VALIGN_OPTIONS = [
+  { value: 'top', label: 'Dồn lên trên' },
+  { value: 'middle', label: 'Giữa theo chiều dọc' },
+  { value: 'bottom', label: 'Dồn xuống dưới' },
+]
+
+export const JUSTIFY_BY_ALIGN = {
+  left: 'flex-start',
+  center: 'center',
+  right: 'flex-end',
+}
+
+export const ALIGN_ITEMS_BY_VALIGN = {
+  top: 'flex-start',
+  middle: 'center',
+  bottom: 'flex-end',
+}
+
 export const TEXT_SWATCHES = [
   '#111111',
   '#d32f2f',
@@ -56,6 +83,8 @@ export const DEFAULT_ITEM = {
   underline: false,
   color: '#111111',
   lineHeight: 1.5,
+  align: 'center', // giữ đúng mặc định của bản gốc: chữ nằm giữa khung
+  valign: 'middle',
   ...frameFields(FRAME_SIZES[1]), // w, h và padding của cỡ 3 × 4
   showPad: true, // tô màu vùng padding (guide, theo từng item)
   elements: [], // chữ / ảnh con đặt tự do trong item

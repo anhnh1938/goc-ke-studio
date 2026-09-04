@@ -69,6 +69,19 @@ trên/dưới thì mất 27% chiều cao, nên cỡ đó chỉ chừa 1 mm.
 **`w`/`h` = 0 nghĩa là "auto", không phải 0.** Item: `w`/`h` = 0 → không có khung. Thành
 phần con: `w` = 0 → chữ co theo nội dung; `h` = 0 → ảnh giữ tỉ lệ gốc.
 
+**Căn lề đi qua flex, không chỉ `text-align`.** Item có `align` (`left|center|right`)
+và `valign` (`top|middle|bottom`), mặc định `center` / `middle` để giữ đúng bản gốc.
+Khung `.a4-text.framed` là flex **row** nên NGANG do `justify-content`, DỌC do
+`align-items` — đổi qua `JUSTIFY_BY_ALIGN` / `ALIGN_ITEMS_BY_VALIGN` trong
+`constants.js`. Giá trị center trong CSS chỉ là mặc định, `FrameItem` luôn ghi đè bằng
+inline style; sửa CSS mà không sửa `FrameItem` sẽ không thấy gì thay đổi. Chữ con chỉ
+có `align` (một mình `text-align`) vì hộp của nó co theo nội dung, căn dọc vô nghĩa —
+`TypographyFields` nhận prop `showValign` để chỉ item mới hiện hàng căn dọc.
+
+Lưu ý khi kiểm tra: `justify-content` thường **không** làm đổi hộp của `.a4-text-inner`
+(chữ dài đã lấp hết bề ngang khả dụng), phải đo từng line box qua
+`Range.getClientRects()` mới thấy các dòng dịch chỗ.
+
 **Nhãn khung đảo thứ tự.** Nhãn "3 × 4 cm" = cao 3, rộng 4 → dữ liệu là `w: 4, h: 3`. Xem
 `FRAME_SIZES` và caption trong `FrameItem.jsx`.
 
@@ -95,9 +108,12 @@ phần con, tên trường y hệt lúc chạy. `presets.js` chỉ điền nốt
 rồi `icons: [{icon,x,y,size}]` — cả hai đều bị bỏ vì bắt người dùng học từ vựng riêng và
 khoá cứng vào emoji trái tim.
 
-Cỡ chữ trong mẫu là số đã đo, không phải ước lượng: khung 3 × 4 cm có lòng trong 36 × 26 mm,
-mỗi mẫu chỉnh sao cho dòng dài nhất lấp ~90% bề ngang. Đổi nội dung mẫu thì phải đo lại,
-xem mục kiểm thử bên dưới.
+Cỡ chữ trong mẫu là số đã đo, không phải ước lượng: mỗi mẫu chỉnh sao cho dòng dài nhất
+lấp ~90% bề ngang lòng khung. Lòng khung = kích thước khung trừ padding của cỡ đó trong
+`FRAME_SIZES`, nên **đổi padding của một cỡ khung là làm lệch số đo của mọi mẫu dùng cỡ
+đó**. Cỡ 3 × 4 cm hiện chừa 10/0/2/0 mm → lòng trong 40 × 18 mm (số cũ 36 × 26 mm ứng với
+padding đều 2 mm). Đổi nội dung mẫu hoặc padding của cỡ khung thì phải đo lại, xem mục
+kiểm thử bên dưới.
 
 ## Quy ước UI (antd)
 
@@ -116,6 +132,23 @@ dung rộng sẽ đẩy tràn cả panel.
 
 **InputNumber trong `.pad-cell` phải ép `width: 100%`** — antd đặt mặc định 90px, làm lưới
 4 cột tràn ở panel hẹp.
+
+**Mobile: một `@media (max-width: 900px)` duy nhất ở cuối `src/index.css`.** Lưới đổi
+sang xếp dọc — preview cao `42dvh` ở trên, panel lấy phần còn lại. Dùng `dvh` khai báo
+sau `vh` (fallback) vì thanh địa chỉ của browser mobile co giãn, `100vh` đẩy đáy panel ra
+ngoài màn hình. Không cần `minmax(0, 1fr)` ở đây: `.settings-section` đã có
+`overflow-y: auto` nên là vùng cuộn, min-content của nó bằng 0 ở cả hai chiều (đã đo).
+
+**Nút nổi trên trang A4 phải bù `transform: scale()`.** `.item-tools` nằm trong
+`.a4-scaler` nên bị thu nhỏ theo trang: ở zoom mobile (~45%) nút 24px chỉ còn ~11px trên
+màn hình. `PreviewStage` đặt biến `--inv-scale` (= 1/scale) trên `.a4-page`, media query
+mobile nhân ngược lại. Nhớ neo `transform-origin: top right` và xếp nút 2 × 2 — 4 nút một
+hàng sau khi bù scale rộng hơn cả item đã thu nhỏ, thò ra ngoài mép giấy rồi bị vùng cuộn
+cắt mất.
+
+**Đổi thứ tự item ở mobile dùng `moveItem(id, delta)`,** không phải kéo thả: kéo thả trên
+trang là HTML5 drag, không có trên màn hình cảm ứng. Hai nút ◀ ▶ trong `.item-tools` là
+đường duy nhất — cụm nút hiện cả khi item được chọn (không chỉ hover) nên chạm được.
 
 Theme đặt `colorPrimary: '#007aff'` trong `src/main.jsx` để giữ đúng tông màu bản gốc.
 Class CSS gốc (`.a4-page`, `.frame-item`, `.sub-el`, `.pad-grid`…) được giữ nguyên tên
@@ -142,6 +175,15 @@ npx vite preview --port 4321 --strictPort   # chạy nền
 
 Kiểm tra ở **cả hai** bề rộng: ~1100px (panel 1 cột) và ~1920px (panel 2 cột) — lỗi tràn
 thường chỉ lộ ra ở một trong hai.
+
+**Đừng dùng `--window-size` để test mobile.** `--headless=new` kẹp bề rộng cửa sổ ở mức
+tối thiểu (~492px) rồi vẫn cắt ảnh về đúng số đã yêu cầu: `--window-size=390,844` cho ra
+ảnh 390px nhưng layout tính theo 492px, phần bị cắt trông y như lỗi tràn ngang. Đã mất
+công đi tìm một bug không tồn tại vì chuyện này. Bề rộng dưới ~500px phải dùng puppeteer
+với `page.setViewport({ width, height })` (đi qua CDP Emulation, không bị kẹp).
+
+Đo tràn ngang thì so `document.documentElement.scrollWidth` với `window.innerWidth`, và
+lọc phần tử có `getBoundingClientRect().right > innerWidth` để biết đúng thủ phạm.
 
 Với logic store/DOM, có thể mount app trong jsdom rồi bắn action qua
 `useEditorStore.getState()` và kiểm tra DOM. Lưu ý: `renderToString` **không** phản ánh
